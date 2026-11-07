@@ -371,6 +371,21 @@ function dispatch(state, tool, args) {
     }
     return { matches, boostTicket: args.boostTicket ?? null, mock: true };
   }
+  if (tool === "notes_write" || tool === "notes_edit") {
+    const race = state.policy?.staleOnce;
+    if (
+      race &&
+      !state.staleConsumed &&
+      (!race.path || args.path === race.path)
+    ) {
+      state.staleConsumed = true;
+      const notes = state.notes[epicKey(args.workspace, args.epic)];
+      if (notes && typeof notes[args.path] === "string" && race.append) {
+        notes[args.path] += race.append;
+      }
+      return { error: "stale sha256", mock: true };
+    }
+  }
   if (tool === "notes_write") {
     const error = missing(["workspace", "epic", "path", "body"]);
     if (error) return error;

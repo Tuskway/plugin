@@ -1,0 +1,63 @@
+{
+  "policy": {
+    "allow": [
+      "epic_list",
+      "epic_get",
+      "notes_read",
+      "notes_list",
+      "notes_edit",
+      "notes_write",
+      "tracker_changes",
+      "suggest_change"
+    ],
+    "staleOnce": {
+      "path": "tech-design/tax.md",
+      "append": "\nAmounts stay preformatted.\n"
+    }
+  },
+  "workspaces": [{ "slug": "fixture", "name": "Fixture", "role": "owner" }],
+  "epics": [
+    {
+      "workspace": "fixture",
+      "slug": "receipts",
+      "title": "Printed receipts",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": "fixture/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": { "current": "design", "nextStep": "Process tracker changes" },
+      "url": "https://tuskway.example/w/fixture/epics/receipts"
+    }
+  ],
+  "noteFiles": {
+    "fixture/receipts": {
+      "notes.md": "notes/notes.md",
+      "tech-design/tax.md": "notes/tax.md"
+    }
+  },
+  "tickets": {},
+  "comments": [],
+  "trackerChanges": [
+    {
+      "id": "ch_typo",
+      "workspace": "fixture",
+      "epic": "receipts",
+      "status": "pending",
+      "path": "tech-design/tax.md",
+      "author": "fixture-tracker",
+      "before": "The tax line stayes as printed today.",
+      "after": "The tax line stays as printed today.",
+      "claimedSha": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

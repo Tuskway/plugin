@@ -567,6 +567,76 @@
           "text": "plan-near-miss: none"
         }
       ]
+    },
+    {
+      "iteration": 4,
+      "id": "tracker-apply",
+      "skill": "tracker-changes-tuskway",
+      "conditions": ["with_skill", "tools_only"],
+      "assertions": [
+        {
+          "id": "listed",
+          "critical": true,
+          "type": "call-present",
+          "tool": "tracker_changes",
+          "args": { "workspace": "fixture", "epic": "receipts", "action": "list" }
+        },
+        {
+          "id": "read-tax",
+          "critical": true,
+          "type": "call-present",
+          "tool": "notes_read",
+          "args": { "workspace": "fixture", "epic": "receipts", "path": "tech-design/tax.md" }
+        },
+        {
+          "id": "stale-then-success",
+          "critical": true,
+          "type": "stale-then-success"
+        },
+        {
+          "id": "resolve-after-write",
+          "critical": true,
+          "type": "resolve-after-success",
+          "changeId": "ch_typo"
+        },
+        {
+          "id": "no-publish",
+          "critical": true,
+          "type": "calls-absent",
+          "tools": ["tracker_sync"]
+        },
+        {
+          "id": "typo-fixed-and-race-kept",
+          "critical": true,
+          "type": "state-note-includes",
+          "epic": "fixture/receipts",
+          "path": "tech-design/tax.md",
+          "texts": ["The tax line stays as printed today.", "Amounts stay preformatted."]
+        },
+        {
+          "id": "typo-gone",
+          "critical": true,
+          "type": "state-note-excludes",
+          "epic": "fixture/receipts",
+          "path": "tech-design/tax.md",
+          "texts": ["stayes"]
+        },
+        {
+          "id": "unrelated-decision-kept",
+          "critical": true,
+          "type": "state-note-includes",
+          "epic": "fixture/receipts",
+          "path": "notes.md",
+          "texts": ["The tax line stays as printed today.", "Northwind"]
+        },
+        {
+          "id": "marked-applied",
+          "critical": true,
+          "type": "state-tracker-status",
+          "changeId": "ch_typo",
+          "allowed": ["applied"]
+        }
+      ]
     }
   ]
 }
