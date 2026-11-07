@@ -87,14 +87,6 @@ function assertRelativePaths(value, base, label) {
   }
 }
 
-function assertNoOnboarding(manifest, label) {
-  assert.equal(Object.hasOwn(manifest, "onboardingSkill"), false, label);
-  const openai = manifest.extensions?.["com.openai"];
-  if (openai) {
-    assert.equal(Object.hasOwn(openai, "onboardingSkill"), false, label);
-  }
-}
-
 function assertHostedServer(server, label) {
   const url = new URL(server.url);
   assert.equal(url.href, mcpUrl, label);
@@ -265,13 +257,25 @@ test("names, descriptions, and versions agree", () => {
     portable.extensions["com.openai"].interface.shortDescription,
     description,
   );
-  assertNoOnboarding(portable, "plugin.json");
-  assertNoOnboarding(codex, ".codex-plugin/plugin.json");
+  assert.equal(
+    portable.extensions["com.openai"].onboardingSkill,
+    "./skills/setup-tuskway/SKILL.md",
+  );
+  assert.equal(codex.onboardingSkill, "./skills/setup-tuskway/SKILL.md");
 });
 
 test("authored skills keep portable frontmatter and local links", () => {
   const skillsDir = path.join(pluginRoot, "skills");
-  const expected = ["tackle-ticket-tuskway", "write-design-tuskway"];
+  const expected = [
+    "comments-tuskway",
+    "draft-tickets-tuskway",
+    "plan-tuskway",
+    "setup-tuskway",
+    "start-epic-tuskway",
+    "tackle-ticket-tuskway",
+    "tracker-changes-tuskway",
+    "write-design-tuskway",
+  ];
   const found = readdirSync(skillsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)

@@ -102,6 +102,7 @@ function loadState(fixture, stateDir) {
     comments: server.comments ?? [],
     trackerChanges: server.trackerChanges ?? [],
     suggestions: [],
+    planOverride: server.planOverride ?? null,
   };
   mkdirSync(stateDir, { recursive: true });
   writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
@@ -542,8 +543,27 @@ function dispatch(state, tool, args) {
   if (tool === "tracker_changes") {
     const error = missing(["workspace", "epic", "action"]);
     if (error) return error;
-    if (args.action === "list") return state.trackerChanges;
-    return { error: "tracker change not found", mock: true };
+    if (args.action === "list") {
+      return state.trackerChanges.filter((change) => !args.status || change.status === args.status);
+    }
+    if (args.action === "get") {
+      const change = state.trackerChanges.find((item) => item.id === args.id);
+      if (!change) return { error: "tracker change not found", mock: true };
+      return { ...change, mock: true };
+    }
+    if (args.action === "resolve") {
+      const epic = findEpic(state, args.workspace, args.epic);
+      if (!epic || !epic.permissions.canManageInbox || epic.status === "archived") {
+        return { error: "resolve refused", mock: true };
+      }
+      const change = state.trackerChanges.find((item) => item.id === args.id);
+      if (!change) return { error: "tracker change not found", mock: true };
+      if (change.status !== "pending") return { error: "tracker change is not pending", mock: true };
+      change.status = args.outcome;
+      change.resolutionNote = args.resolutionNote ?? "";
+      return { id: change.id, status: change.status, mock: true };
+    }
+    return { error: `unsupported tracker action ${args.action}`, mock: true };
   }
   if (tool === "tracker_sync") {
     return { error: "publish is not authorized by this fixture", mock: true };
@@ -566,9 +586,16 @@ function main() {
   const state = loadState(path.resolve(parsed.fixture), path.resolve(parsed.state));
   const allowed = new Set(state.policy?.allow ?? []);
   const refused = !allowed.has(parsed.tool);
-  const result = refused
-    ? { error: "fixture policy refused this tool", tool: parsed.tool, mock: true }
-    : dispatch(state, parsed.tool, parsed.args);
+  let result;
+  if (refused) {
+    result = { error: "fixture policy refused this tool", tool: parsed.tool, mock: true };
+  } else if (parsed.tool === "epic_list" && state.policy?.epicListError) {
+    result = { error: state.policy.epicListError, mock: true };
+  } else if (parsed.tool === "ticket_plan" && state.planOverride) {
+    result = { ...state.planOverride, mock: true };
+  } else {
+    result = dispatch(state, parsed.tool, parsed.args);
+  }
   if (!refused) saveState(path.resolve(parsed.state), state);
   mkdirSync(path.dirname(path.resolve(parsed.log)), { recursive: true });
   appendFileSync(

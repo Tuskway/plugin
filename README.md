@@ -4,7 +4,7 @@ One plugin folder, `plugins/tuskway`, installed as-is by Claude Code, Cursor, Co
 
 The plugin connects to the hosted MCP server at `https://tuskway.com/mcp`. Sign-in is OAuth in the client. The package contains no access tokens, hooks, rule files, or subagents. The root `package.json` is private so it is not published to npm. There is no per-client build output.
 
-Workflow skills are authored under `plugins/tuskway/skills/`. `setup-tuskway` is not in this package yet, so neither manifest declares `onboardingSkill`.
+Eight workflow skills are authored under `plugins/tuskway/skills/`. `sync-design-tuskway` is not in this package. Codex onboarding points at `./skills/setup-tuskway/SKILL.md`.
 
 ## Private testing
 
@@ -27,7 +27,7 @@ A public repository is not a directory listing. This package is not submitted to
 
 `.mcp.json` is the Claude form `{ "type": "http", "url": "https://tuskway.com/mcp" }`. Claude Code accepts `streamable-http` as an alias of `http` and treats a `url` without `type` as stdio. Cursor's loader reads `.mcp.json` before `mcp.json` when both exist ([cursor/plugins#252](https://github.com/cursor/plugins/issues/252)). `.cursor-plugin/plugin.json` pins `mcpServers` to `./.mcp.json`. Both files name the server `tuskway` and use the same URL.
 
-Current Codex requires `onboardingSkill` to be a `./` path to a packaged `SKILL.md`. The setup skill is not in this package, so neither manifest declares `onboardingSkill`.
+Current Codex requires `onboardingSkill` to be a `./` path to a packaged `SKILL.md`. `plugins/tuskway/plugin.json` sets `extensions["com.openai"].onboardingSkill` to `./skills/setup-tuskway/SKILL.md`, and `.codex-plugin/plugin.json` sets the same path. Codex was not run after that field was set.
 
 Pi installs this repository from git. `"private": true` does not block that clone. Pi 1.5.0 installed this package from a local git HTTP remote and left `private` set. `pi install git:github.com/tuskway/plugin` was not run against github.com. `libnpmpublish` rejects a private manifest with `EPRIVATE` before it sends the package to the registry. On npm 10.9.9, `npm publish --dry-run` still packs a private manifest and does not upload it. The npm CLI calls the publisher only after its local credential check.
 

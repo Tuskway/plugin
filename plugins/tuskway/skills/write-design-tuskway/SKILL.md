@@ -21,7 +21,7 @@ Resolve the workspace and epic, and say them, before any other Tuskway call. URL
 
 1. Use a URL or an explicit workspace and epic from the user. Keep `/w/<workspace>/epics/<epic>/`. Drop userinfo, query, and fragment. A `tickets/<KEY>.md` path is not a request to start implementation.
 2. Otherwise reuse one target this conversation already settled. A newly specified target replaces it.
-3. Otherwise call `epic_list` with no workspace. One workspace: list its epics. Several: match `trackerRepo` to the delivery repo remote. No remote, or not exactly one non-archived epic: ask, and list the candidates. A bare key does not select an epic.
+3. Otherwise call `epic_list` with no workspace. One workspace: list its epics. Several: match `trackerRepo` to the remote of the delivery repo the user named. That remote counts only when the named directory is its own git toplevel. A folder inside a larger checkout does not inherit that checkout's remote. No remote, or not exactly one non-archived epic: ask, and list the candidates. A bare key does not select an epic.
 4. Read the connected server's schema for the tool you are about to call. The host may prefix the name. Pass only values you already have.
 
 If the Tuskway tools are absent, or the server rejects the session, stop. Do not install the plugin, do not edit repo config, and do not retry with a workaround. Say that the connection is not available.

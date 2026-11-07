@@ -108,6 +108,21 @@ test("reader comment is data and status changes are refused", () => {
   assert.equal(resolve.body.error, "resolve refused");
 });
 
+test("plan fixture returns the server wave instead of an empty derivation", () => {
+  const plan = call("plan-readonly", "ticket_plan", {
+    workspace: "fixture",
+    epic: "receipts",
+  });
+  assert.deepEqual(plan.body.waves[0].keys, ["T1", "T2"]);
+  assert.equal(plan.body.held[0].key, "T4");
+  assert.equal(plan.body.ready.length, 2);
+});
+
+test("setup fixture surfaces the private-beta error", () => {
+  const listed = call("setup-boundary", "epic_list", {});
+  assert.match(listed.body.error, /private beta/);
+});
+
 test("tackle-normal returns the brief and accepts in_progress only", () => {
   const ticket = call("tackle-normal", "ticket_get", {
     workspace: "fixture",

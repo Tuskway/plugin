@@ -23,7 +23,7 @@ Resolve all three identifiers, and say them, before `ticket_get` or any edit. UR
 
 1. Use a URL or an explicit workspace, epic, and key. `tickets/<KEY>.md` under `/w/<workspace>/epics/<epic>/` supplies all three. Drop userinfo, query, and fragment.
 2. Otherwise reuse one target this conversation already settled. A newly specified target replaces it.
-3. Otherwise call `epic_list` with no workspace, then the remote match in the target reference. Continue only with one non-archived epic. A bare key such as `T5` never chooses among epics. Ask and name the candidates.
+3. Otherwise call `epic_list` with no workspace, then the remote match in the target reference. A remote counts only when the named delivery directory is its own git toplevel. A folder inside a larger checkout does not inherit that checkout's remote. Continue only with one non-archived epic. A bare key such as `T5` never chooses among epics. Ask and name the candidates.
 4. Read the connected server's schema before the call. The host may prefix the name. Pass only values you already have.
 
 If the Tuskway tools are absent, or the server rejects the session, stop. Do not install the plugin or retry around the failure.
