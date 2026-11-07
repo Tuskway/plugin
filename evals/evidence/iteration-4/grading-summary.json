@@ -1,0 +1,179 @@
+{
+  "iteration": 4,
+  "comparator": {
+    "id": "7933ea3ca9ba3275d76d5c842d7716f1df0460b5",
+    "status": "unavailable",
+    "detail": "GitHub returned 404 for Brackyt/tuskway tests/__snapshots__/plugin-skills.test.ts.snap at that commit. The snapshot was not recreated."
+  },
+  "gradedAt": "2026-11-07T23:15:28.942Z",
+  "note": "These runs are explicit with_skill executions. A missing tools_only directory is NOT RUN, not a pass. This file is automated assertion output, not a usefulness review.",
+  "fixtures": [
+    {
+      "id": "tracker-apply",
+      "skill": "tracker-changes-tuskway",
+      "toolsOnly": "critical-pass",
+      "conditions": {
+        "with_skill": {
+          "status": "critical-pass",
+          "passed": 9,
+          "failed": 0,
+          "criticalFailed": [],
+          "results": [
+            {
+              "id": "listed",
+              "critical": true,
+              "applicable": true,
+              "text": "listed",
+              "passed": true,
+              "evidence": "tracker_changes {\"workspace\":\"fixture\",\"epic\":\"receipts\",\"action\":\"list\"}"
+            },
+            {
+              "id": "read-tax",
+              "critical": true,
+              "applicable": true,
+              "text": "read-tax",
+              "passed": true,
+              "evidence": "notes_read {\"workspace\":\"fixture\",\"epic\":\"receipts\",\"path\":\"tech-design/tax.md\"}"
+            },
+            {
+              "id": "stale-then-success",
+              "critical": true,
+              "applicable": true,
+              "text": "stale-then-success",
+              "passed": true,
+              "evidence": "stale at edit 1, success at edit 2"
+            },
+            {
+              "id": "resolve-after-write",
+              "critical": true,
+              "applicable": true,
+              "text": "resolve-after-write",
+              "passed": true,
+              "evidence": "write at call 8, resolve at call 9"
+            },
+            {
+              "id": "no-publish",
+              "critical": true,
+              "applicable": true,
+              "text": "no-publish",
+              "passed": true,
+              "evidence": "no tracker_sync calls"
+            },
+            {
+              "id": "typo-fixed-and-race-kept",
+              "critical": true,
+              "applicable": true,
+              "text": "typo-fixed-and-race-kept",
+              "passed": true,
+              "evidence": "tech-design/tax.md contains the required text"
+            },
+            {
+              "id": "typo-gone",
+              "critical": true,
+              "applicable": true,
+              "text": "typo-gone",
+              "passed": true,
+              "evidence": "tech-design/tax.md omits the banned text"
+            },
+            {
+              "id": "unrelated-decision-kept",
+              "critical": true,
+              "applicable": true,
+              "text": "unrelated-decision-kept",
+              "passed": true,
+              "evidence": "notes.md contains the required text"
+            },
+            {
+              "id": "marked-applied",
+              "critical": true,
+              "applicable": true,
+              "text": "marked-applied",
+              "passed": true,
+              "evidence": "ch_typo status applied"
+            }
+          ]
+        },
+        "tools_only": {
+          "status": "critical-pass",
+          "passed": 9,
+          "failed": 0,
+          "criticalFailed": [],
+          "results": [
+            {
+              "id": "listed",
+              "critical": true,
+              "applicable": true,
+              "text": "listed",
+              "passed": true,
+              "evidence": "tracker_changes {\"workspace\":\"fixture\",\"epic\":\"receipts\",\"action\":\"list\"}"
+            },
+            {
+              "id": "read-tax",
+              "critical": true,
+              "applicable": true,
+              "text": "read-tax",
+              "passed": true,
+              "evidence": "notes_read {\"workspace\":\"fixture\",\"epic\":\"receipts\",\"path\":\"tech-design/tax.md\"}"
+            },
+            {
+              "id": "stale-then-success",
+              "critical": true,
+              "applicable": true,
+              "text": "stale-then-success",
+              "passed": true,
+              "evidence": "stale at edit 1, success at edit 2"
+            },
+            {
+              "id": "resolve-after-write",
+              "critical": true,
+              "applicable": true,
+              "text": "resolve-after-write",
+              "passed": true,
+              "evidence": "write at call 12, resolve at call 16"
+            },
+            {
+              "id": "no-publish",
+              "critical": true,
+              "applicable": true,
+              "text": "no-publish",
+              "passed": true,
+              "evidence": "no tracker_sync calls"
+            },
+            {
+              "id": "typo-fixed-and-race-kept",
+              "critical": true,
+              "applicable": true,
+              "text": "typo-fixed-and-race-kept",
+              "passed": true,
+              "evidence": "tech-design/tax.md contains the required text"
+            },
+            {
+              "id": "typo-gone",
+              "critical": true,
+              "applicable": true,
+              "text": "typo-gone",
+              "passed": true,
+              "evidence": "tech-design/tax.md omits the banned text"
+            },
+            {
+              "id": "unrelated-decision-kept",
+              "critical": true,
+              "applicable": true,
+              "text": "unrelated-decision-kept",
+              "passed": true,
+              "evidence": "notes.md contains the required text"
+            },
+            {
+              "id": "marked-applied",
+              "critical": true,
+              "applicable": true,
+              "text": "marked-applied",
+              "passed": true,
+              "evidence": "ch_typo status applied"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

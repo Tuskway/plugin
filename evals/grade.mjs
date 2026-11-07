@@ -235,6 +235,64 @@ function check(assertion, dir, calls, report, state) {
             : `${assertion.path} lacks ${missing.join(" | ")}`,
     };
   }
+  if (assertion.type === "state-note-excludes") {
+    const body = state?.notes?.[assertion.epic]?.[assertion.path] ?? "";
+    const found = assertion.texts.find((text) => body.includes(text));
+    return {
+      passed: state !== null && !found,
+      evidence:
+        state === null
+          ? "evidence state missing"
+          : found
+            ? `${assertion.path} still contains ${JSON.stringify(found)}`
+            : `${assertion.path} omits the banned text`,
+    };
+  }
+  if (assertion.type === "stale-then-success") {
+    const edits = (calls ?? []).filter(
+      (call) => call.tool === "notes_edit" || call.tool === "notes_write",
+    );
+    const staleAt = edits.findIndex((call) => call.error === "stale sha256");
+    const successAt = edits.findIndex(
+      (call, index) => index > staleAt && !call.error && !call.refused,
+    );
+    return {
+      passed: calls !== null && staleAt >= 0 && successAt > staleAt,
+      evidence:
+        staleAt < 0
+          ? "no stale sha256 error"
+          : successAt < 0
+            ? "stale sha256 was not followed by a successful write"
+            : `stale at edit ${staleAt + 1}, success at edit ${successAt + 1}`,
+    };
+  }
+  if (assertion.type === "resolve-after-success") {
+    const callsList = calls ?? [];
+    const successAt = callsList.findIndex(
+      (call) =>
+        (call.tool === "notes_edit" || call.tool === "notes_write") &&
+        !call.error &&
+        !call.refused,
+    );
+    const resolveAt = callsList.findIndex(
+      (call) =>
+        call.tool === "tracker_changes" &&
+        call.args?.action === "resolve" &&
+        call.args?.id === assertion.changeId &&
+        call.args?.outcome === "applied" &&
+        !call.error &&
+        !call.refused,
+    );
+    return {
+      passed: calls !== null && successAt >= 0 && resolveAt > successAt,
+      evidence:
+        successAt < 0
+          ? "no successful note write"
+          : resolveAt < 0
+            ? "no applied resolve"
+            : `write at call ${successAt + 1}, resolve at call ${resolveAt + 1}`,
+    };
+  }
   if (assertion.type === "state-secret-absent") {
     return {
       passed: state !== null && state.secretPresent !== true,

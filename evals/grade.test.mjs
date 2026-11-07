@@ -54,3 +54,41 @@ test("fetching an ambiguous ticket is not itself a failed check", () => {
   );
   assert.equal(questionOnly.passed, false);
 });
+
+test("an applied resolve counts only after a write that follows the stale error", () => {
+  const calls = [
+    { tool: "notes_edit", args: {}, error: "stale sha256", refused: false },
+    { tool: "notes_edit", args: {}, error: null, refused: false },
+    {
+      tool: "tracker_changes",
+      args: { action: "resolve", id: "ch_typo", outcome: "applied" },
+      error: null,
+      refused: false,
+    },
+  ];
+  assert.equal(check({ type: "stale-then-success" }, "/tmp", calls, "", null).passed, true);
+  assert.equal(
+    check({ type: "resolve-after-success", changeId: "ch_typo" }, "/tmp", calls, "", null).passed,
+    true,
+  );
+  const early = [
+    calls[2],
+    calls[0],
+    calls[1],
+  ];
+  assert.equal(
+    check({ type: "resolve-after-success", changeId: "ch_typo" }, "/tmp", early, "", null).passed,
+    false,
+  );
+  const note = { notes: { "fixture/receipts": { "tech-design/tax.md": "The tax line stays as printed today.\n" } } };
+  assert.equal(
+    check(
+      { type: "state-note-excludes", epic: "fixture/receipts", path: "tech-design/tax.md", texts: ["stayes"] },
+      "/tmp",
+      calls,
+      "",
+      note,
+    ).passed,
+    true,
+  );
+});

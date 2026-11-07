@@ -1,0 +1,17 @@
+{"at":"2026-11-07T23:13:51.339Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"list"},"refused":false,"error":null}
+{"at":"2026-11-07T23:13:55.454Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"get","id":"ch_typo"},"refused":false,"error":null}
+{"at":"2026-11-07T23:13:55.516Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:13:56.130Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:13:56.591Z","tool":"design_get","args":{"workspace":"fixture","epic":"receipts"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:13:57.110Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"receipts"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:13:57.727Z","tool":"notes_search","args":{"workspace":"fixture","epic":"receipts","query":"tax stayes stays"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:14:05.056Z","tool":"notes_list","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:05.056Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:12.760Z","tool":"notes_edit","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md","oldString":"The tax line stayes as printed today.","newString":"The tax line stays as printed today.","expectedSha256":"39822affa43cccbe8e1146da46980e129389bea8b3f3696bd99d96a14a18bf11"},"refused":false,"error":"stale sha256"}
+{"at":"2026-11-07T23:14:14.816Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:21.176Z","tool":"notes_edit","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md","oldString":"The tax line stayes as printed today.","newString":"The tax line stays as printed today.","expectedSha256":"54b7772fede2f8c32ddddfe8258d8932259c8964db35ef3f81024f954f8806e2"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:23.411Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:25.431Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:25.448Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"list"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:28.628Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"resolve","id":"ch_typo","outcome":"applied"},"refused":false,"error":null}
+{"at":"2026-11-07T23:14:30.648Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"list"},"refused":false,"error":null}

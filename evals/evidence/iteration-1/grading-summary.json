@@ -5,7 +5,7 @@
     "status": "unavailable",
     "detail": "GitHub returned 404 for Brackyt/tuskway tests/__snapshots__/plugin-skills.test.ts.snap at that commit. The snapshot was not recreated."
   },
-  "gradedAt": "2026-11-07T23:09:06.642Z",
+  "gradedAt": "2026-11-07T23:15:28.797Z",
   "fixtures": [
     {
       "id": "design-normal",
@@ -312,7 +312,7 @@
               "applicable": true,
               "text": "tests-pass",
               "passed": true,
-              "evidence": "# skipped 0 # todo 0 # duration_ms 42.215252"
+              "evidence": "# skipped 0 # todo 0 # duration_ms 42.714852"
             },
             {
               "id": "evidence-table-has-results",
@@ -384,7 +384,7 @@
               "applicable": true,
               "text": "tests-pass",
               "passed": true,
-              "evidence": "# skipped 0 # todo 0 # duration_ms 41.993396"
+              "evidence": "# skipped 0 # todo 0 # duration_ms 43.243771"
             },
             {
               "id": "evidence-table-has-results",

@@ -222,6 +222,60 @@ test("ticket external ids are per ticket and a draft stores dependsOn", () => {
   }
 });
 
+test("the first tax edit goes stale and the reread keeps the concurrent sentence", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "tuskway-mock-"));
+  try {
+    const args = [
+      "--fixture",
+      path.join(root, "evals/fixtures/tracker-apply"),
+      "--state",
+      path.join(dir, "state"),
+      "--log",
+      path.join(dir, "calls.jsonl"),
+    ];
+    const read = JSON.parse(execFileSync("node", [mock, ...args, "notes_read", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      path: "tech-design/tax.md",
+    })], { encoding: "utf8" }));
+    const stale = JSON.parse(execFileSync("node", [mock, ...args, "notes_edit", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      path: "tech-design/tax.md",
+      oldString: "stayes",
+      newString: "stays",
+      expectedSha256: read.sha256,
+    })], { encoding: "utf8" }));
+    assert.equal(stale.error, "stale sha256");
+    const again = JSON.parse(execFileSync("node", [mock, ...args, "notes_read", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      path: "tech-design/tax.md",
+    })], { encoding: "utf8" }));
+    assert.match(again.body, /Amounts stay preformatted/);
+    assert.notEqual(again.sha256, read.sha256);
+    const edited = JSON.parse(execFileSync("node", [mock, ...args, "notes_edit", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      path: "tech-design/tax.md",
+      oldString: "stayes",
+      newString: "stays",
+      expectedSha256: again.sha256,
+    })], { encoding: "utf8" }));
+    assert.equal(edited.error, undefined);
+    const finalRead = JSON.parse(execFileSync("node", [mock, ...args, "notes_read", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      path: "tech-design/tax.md",
+    })], { encoding: "utf8" }));
+    assert.match(finalRead.body, /The tax line stays as printed today/);
+    assert.match(finalRead.body, /Amounts stay preformatted/);
+    assert.equal(finalRead.body.includes("stayes"), false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("setup fixture surfaces the private-beta error", () => {
   const listed = call("setup-boundary", "epic_list", {});
   assert.match(listed.body.error, /private beta/);

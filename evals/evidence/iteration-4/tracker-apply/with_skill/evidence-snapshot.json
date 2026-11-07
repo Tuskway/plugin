@@ -1,0 +1,20 @@
+{
+  "notes": {
+    "fixture/receipts": {
+      "notes.md": "# Printed receipts\n\n## Decisions\n\n- D1: The tax line stays as printed today.\n- D4: The shop name is Northwind.\n",
+      "tech-design/tax.md": "# Tax line\n\nThe tax line stays as printed today.\n\nAmounts stay preformatted.\n"
+    }
+  },
+  "tickets": {},
+  "secretPresent": false,
+  "tracker": [
+    {
+      "id": "ch_typo",
+      "epic": "receipts",
+      "status": "applied",
+      "path": "tech-design/tax.md"
+    }
+  ],
+  "suggestionCount": 0,
+  "mock": true
+}
