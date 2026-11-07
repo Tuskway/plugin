@@ -1,0 +1,16 @@
+{
+  "name": "tuskway",
+  "displayName": "Tuskway",
+  "version": "0.1.0",
+  "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+  "author": {
+    "name": "Tuskway",
+    "email": "hello@tuskway.com",
+    "url": "https://tuskway.com"
+  },
+  "homepage": "https://tuskway.com",
+  "repository": "https://github.com/Tuskway/plugin",
+  "license": "MIT",
+  "keywords": ["tuskway", "mcp", "planning"],
+  "mcpServers": "./.mcp.json"
+}

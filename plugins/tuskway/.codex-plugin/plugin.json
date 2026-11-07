@@ -1,0 +1,36 @@
+{
+  "name": "tuskway",
+  "version": "0.1.0",
+  "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+  "author": {
+    "name": "Tuskway",
+    "email": "hello@tuskway.com",
+    "url": "https://tuskway.com"
+  },
+  "homepage": "https://tuskway.com",
+  "repository": "https://github.com/Tuskway/plugin",
+  "license": "MIT",
+  "keywords": ["tuskway", "mcp", "planning"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Tuskway",
+    "shortDescription": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+    "longDescription": "One plugin folder for the hosted Tuskway MCP server. Clients sign in with OAuth. Workflow skills are added under skills/.",
+    "developerName": "Tuskway",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://tuskway.com",
+    "supportURL": "https://tuskway.com",
+    "privacyPolicyURL": "https://tuskway.com/privacy",
+    "termsOfServiceURL": "https://tuskway.com/terms",
+    "defaultPrompt": [
+      "What Tuskway epics can I open?",
+      "Read the design for this epic.",
+      "Which Tuskway tickets are ready to start?"
+    ],
+    "brandColor": "#17150f",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}

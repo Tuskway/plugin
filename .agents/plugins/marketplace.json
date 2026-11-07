@@ -1,0 +1,20 @@
+{
+  "name": "tuskway",
+  "interface": {
+    "displayName": "Tuskway"
+  },
+  "plugins": [
+    {
+      "name": "tuskway",
+      "source": {
+        "source": "local",
+        "path": "./plugins/tuskway"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
