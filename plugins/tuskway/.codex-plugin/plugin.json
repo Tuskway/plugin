@@ -13,11 +13,10 @@
   "keywords": ["tuskway", "mcp", "planning"],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
-  "onboardingSkill": "setup-tuskway",
   "interface": {
     "displayName": "Tuskway",
     "shortDescription": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
-    "longDescription": "One plugin folder for the hosted Tuskway MCP server. Clients sign in with OAuth. Workflow skills live under skills/.",
+    "longDescription": "One plugin folder for the hosted Tuskway MCP server. Clients sign in with OAuth. Workflow skills are added under skills/.",
     "developerName": "Tuskway",
     "category": "Developer Tools",
     "capabilities": ["Read", "Write"],
