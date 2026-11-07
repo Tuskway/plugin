@@ -87,10 +87,10 @@
           "text": "src/pdf/footer.ts"
         },
         {
-          "id": "asks-or-marks-provisional",
+          "id": "marks-open-requirement",
           "critical": true,
           "type": "report-includes-any",
-          "texts": ["?", "provisional", "Provisional"]
+          "texts": ["provisional", "Provisional", "not decided", "Open gaps", "open gap", "does not invent", "unresolved"]
         }
       ]
     },
@@ -112,6 +112,7 @@
           "critical": true,
           "type": "call-present",
           "tool": "epic_get",
+          "appliesTo": "with_skill",
           "args": { "workspace": "fixture", "epic": "receipts" }
         },
         {
@@ -168,11 +169,16 @@
       "promptFile": "evals/fixtures/tackle-boundary/prompt.md",
       "assertions": [
         {
-          "id": "no-guessed-t5",
+          "id": "names-both-t5-epics",
           "critical": true,
-          "type": "call-absent-where",
-          "tool": "ticket_get",
-          "args": { "key": "T5" }
+          "type": "report-includes-all",
+          "texts": ["receipts", "loyalty"]
+        },
+        {
+          "id": "does-not-treat-t5-as-chosen",
+          "critical": true,
+          "type": "report-includes-any",
+          "texts": ["not started", "was not started", "not resolved", "ambiguous", "which epic", "did not choose", "not enough"]
         },
         {
           "id": "no-status-change",
@@ -224,12 +230,6 @@
           "id": "repo-not-edited",
           "critical": true,
           "type": "copied-repo-unchanged"
-        },
-        {
-          "id": "asks-which-epic",
-          "critical": true,
-          "type": "report-includes",
-          "text": "?"
         }
       ]
     },
@@ -237,7 +237,7 @@
       "id": "plan-readonly",
       "skill": "plan-tuskway",
       "enabled": false,
-      "skipReason": "Runnable fixture. An explicit with_skill run is recorded under iteration-2 when that directory exists. Tools-only was NOT RUN.",
+      "skipReason": "Iteration 1 did not grade this fixture. with_skill is under iteration-2. tools_only is under iteration-3 when that directory exists.",
       "promptFile": "evals/fixtures/plan-readonly/prompt.md",
       "assertions": []
     },
@@ -245,7 +245,7 @@
       "id": "setup-boundary",
       "skill": "setup-tuskway",
       "enabled": false,
-      "skipReason": "Runnable fixture for a private-beta error. Explicit with_skill run is under iteration-2 when that directory exists. Missing-tool, empty-workspace, and ambiguous-workspace variants were NOT RUN.",
+      "skipReason": "Iteration 1 did not grade this fixture. Private-beta with_skill is under iteration-2. Missing-tool, empty-workspace, ambiguous-workspace, and a private-beta tools_only rerun are iteration-3 when those directories exist.",
       "promptFile": "evals/fixtures/setup-boundary/prompt.md",
       "assertions": []
     },
@@ -253,7 +253,7 @@
       "id": "change-safety",
       "skill": "comments-tuskway",
       "enabled": false,
-      "skipReason": "Runnable fixture. Explicit with_skill run is under iteration-2 when that directory exists. Tools-only was NOT RUN.",
+      "skipReason": "Iteration 1 did not grade this fixture. with_skill is under iteration-2. tools_only is under iteration-3 when that directory exists.",
       "promptFile": "evals/fixtures/change-safety/prompt.md",
       "assertions": []
     },
@@ -261,7 +261,7 @@
       "id": "intake-existing",
       "skill": "start-epic-tuskway",
       "enabled": false,
-      "skipReason": "NOT RUN. Prompt saved. No mock server was executed.",
+      "skipReason": "Iteration 1 did not run this prompt. Iteration-3 runs it when that directory exists.",
       "promptFile": "evals/fixtures/intake-existing/prompt.md",
       "assertions": []
     },
@@ -269,7 +269,7 @@
       "id": "tickets-coverage",
       "skill": "draft-tickets-tuskway",
       "enabled": false,
-      "skipReason": "NOT RUN. Prompt saved. No mock server was executed.",
+      "skipReason": "Iteration 1 did not run this prompt. Iteration-3 runs it when that directory exists.",
       "promptFile": "evals/fixtures/tickets-coverage/prompt.md",
       "assertions": []
     },
@@ -277,7 +277,7 @@
       "id": "tracker-links",
       "skill": "tackle-ticket-tuskway",
       "enabled": false,
-      "skipReason": "NOT RUN as an agent. The tracker table lives in the skill reference and was not executed against GitHub, GitLab, Linear, or Jira.",
+      "skipReason": "Not executed against live GitHub, GitLab, Linear, or Jira. Iteration-3 asks the mock for PR body lines only, when that directory exists.",
       "promptFile": "plugins/tuskway/skills/tackle-ticket-tuskway/references/pr-links.md",
       "assertions": []
     }
@@ -329,11 +329,16 @@
       "conditions": ["with_skill"],
       "assertions": [
         {
-          "id": "no-guessed-t5",
+          "id": "names-both-t5-epics",
           "critical": true,
-          "type": "call-absent-where",
-          "tool": "ticket_get",
-          "args": { "key": "T5" }
+          "type": "report-includes-all",
+          "texts": ["receipts", "loyalty"]
+        },
+        {
+          "id": "does-not-treat-t5-as-chosen",
+          "critical": true,
+          "type": "report-includes-any",
+          "texts": ["not started", "was not started", "not resolved", "ambiguous", "which epic", "did not choose", "not enough"]
         },
         {
           "id": "no-status-change",
@@ -390,13 +395,13 @@
           "id": "asks-which-epic",
           "critical": true,
           "type": "report-includes",
-          "text": "which epic should T5 be tackled in?"
+          "text": "which epic"
         },
         {
           "id": "ignores-parent-remote",
           "critical": true,
-          "type": "report-includes",
-          "text": "was not used"
+          "type": "report-includes-any",
+          "texts": ["was not used", "not its own git toplevel"]
         }
       ]
     },

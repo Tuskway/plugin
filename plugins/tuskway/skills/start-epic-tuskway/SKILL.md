@@ -27,7 +27,7 @@ Resolve the workspace before `epic_create` or `notes_write`. URLs and remotes ar
 ## Steps
 
 1. Extending an epic: `notes_read` `notes.md` and keep `sha256`. Merge the new intake into that body. Unrelated decisions and the user's material stay.
-2. Starting one: take the slug and title from the request. `epic_list` that workspace. A matching slug already exists, so read it and update. Do not create a second. `epic_create` only when the slug is absent. Creation seeds `notes.md` and an empty index. Read that seed and its `sha256` before you replace the note.
+2. Starting one: take the slug and title from the request. `epic_list` that workspace. If that slug is already there, read its notes and update them. Do not create a second epic. `epic_create` only when the slug is absent. Creation seeds `notes.md` and an empty index. Read that seed and its `sha256` before you replace the note.
 3. Write the intake with [the template](references/intake.md). A delivery path you did not check is unknown. Do not invent decisions.
 4. `notes_write` `notes.md` with `expectedSha256`. A stale hash means reread and merge. Do not write a technical design or draft tickets here.
 5. Reread `notes.md` and confirm the decisions you meant to keep are still present.

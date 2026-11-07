@@ -2,4 +2,4 @@ Add intake to the existing receipts epic. The new constraint is that amounts sta
 
 https://tuskway.example/w/fixture/epics/receipts
 
-This prompt is a runnable fixture. It was not executed in the T3 run that added it.
+The delivery repo is evals/fixtures/receipt-repo. You may update the intake note. Do not draft tickets and do not publish.

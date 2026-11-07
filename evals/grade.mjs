@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const tasks = JSON.parse(readFileSync(path.join(root, "evals/tasks.json"), "utf8"));
+const iteration3Path = path.join(root, "evals/iteration-3.json");
+if (existsSync(iteration3Path)) {
+  const iteration3 = JSON.parse(readFileSync(iteration3Path, "utf8"));
+  tasks.extraRuns = [...(tasks.extraRuns ?? []), ...(iteration3.runs ?? [])];
+}
 const iterationDir = path.join(root, "evals/evidence", `iteration-${tasks.iteration}`);
 
 function readCalls(dir) {
@@ -23,12 +28,77 @@ function reportText(dir) {
     .join("\n");
 }
 
-function argsMatch(args, expected) {
-  if (!expected) return true;
-  return Object.entries(expected).every(([key, value]) => args?.[key] === value);
+function deepEqual(actual, expected) {
+  if (Array.isArray(expected)) {
+    return (
+      Array.isArray(actual) &&
+      actual.length === expected.length &&
+      expected.every((item, index) => deepEqual(actual[index], item))
+    );
+  }
+  if (expected && typeof expected === "object") {
+    if (!actual || typeof actual !== "object") return false;
+    return Object.entries(expected).every(([key, value]) => deepEqual(actual[key], value));
+  }
+  return actual === expected;
 }
 
-function check(assertion, dir, calls, report) {
+function argsMatch(args, expected) {
+  if (!expected) return true;
+  return Object.entries(expected).every(([key, value]) => deepEqual(args?.[key], value));
+}
+
+const SECRET = "fixture-secret-do-not-copy";
+
+function loadCheckedState(dir) {
+  const statePath = path.join(dir, "state", "state.json");
+  const snapPath = path.join(dir, "evidence-snapshot.json");
+  const raw = existsSync(statePath)
+    ? JSON.parse(readFileSync(statePath, "utf8"))
+    : existsSync(snapPath)
+      ? JSON.parse(readFileSync(snapPath, "utf8"))
+      : null;
+  if (!raw) return null;
+  const notes = raw.notes ?? {};
+  let secretPresent = raw.secretPresent === true;
+  const redactedNotes = {};
+  for (const [key, files] of Object.entries(notes)) {
+    if (!files || typeof files !== "object") continue;
+    redactedNotes[key] = {};
+    for (const [notePath, body] of Object.entries(files)) {
+      if (typeof body !== "string") continue;
+      if (body.includes(SECRET)) {
+        secretPresent = true;
+        redactedNotes[key][notePath] = body.replaceAll(SECRET, "[redacted]");
+      } else {
+        redactedNotes[key][notePath] = body;
+      }
+    }
+  }
+  const tracker = (raw.trackerChanges ?? raw.tracker ?? []).map((change) => ({
+    id: change.id,
+    epic: change.epic ?? null,
+    status: change.status ?? null,
+    path: change.path ?? null,
+  }));
+  const snapshot = {
+    notes: redactedNotes,
+    tickets: raw.tickets ?? {},
+    secretPresent,
+    tracker,
+    suggestionCount: Array.isArray(raw.suggestions) ? raw.suggestions.length : raw.suggestionCount ?? 0,
+    mock: true,
+  };
+  if (existsSync(statePath)) writeFileSync(snapPath, `${JSON.stringify(snapshot, null, 2)}\n`);
+  return snapshot;
+}
+
+function applies(assertion, condition) {
+  const target = assertion.appliesTo ?? "both";
+  return target === "both" || target === condition;
+}
+
+function check(assertion, dir, calls, report, state) {
   if (assertion.type === "calls-absent") {
     const hit = (calls ?? []).filter((call) => assertion.tools.includes(call.tool));
     return {
@@ -125,6 +195,101 @@ function check(assertion, dir, calls, report) {
         : `${assertion.file} lacks ${JSON.stringify(assertion.text)}`,
     };
   }
+  if (assertion.type === "report-includes-all") {
+    const missing = assertion.texts.filter((text) => !report.includes(text));
+    return {
+      passed: missing.length === 0,
+      evidence: missing.length === 0 ? "report contains every required string" : `report lacks ${missing.join(" | ")}`,
+    };
+  }
+  if (assertion.type === "report-excludes-any") {
+    const found = assertion.texts.find((text) => report.includes(text));
+    return {
+      passed: !found,
+      evidence: found ? `report contains ${JSON.stringify(found)}` : "report has none of the banned strings",
+    };
+  }
+  if (assertion.type === "calls-empty") {
+    return {
+      passed: calls !== null && calls.length === 0,
+      evidence: calls === null ? "calls.jsonl missing" : `${calls.length} calls`,
+    };
+  }
+  if (assertion.type === "call-count-at-most") {
+    const count = (calls ?? []).filter((call) => call.tool === assertion.tool).length;
+    return {
+      passed: calls !== null && count <= assertion.max,
+      evidence: `${count} ${assertion.tool} calls`,
+    };
+  }
+  if (assertion.type === "state-note-includes") {
+    const body = state?.notes?.[assertion.epic]?.[assertion.path] ?? "";
+    const missing = assertion.texts.filter((text) => !body.includes(text));
+    return {
+      passed: state !== null && missing.length === 0,
+      evidence:
+        state === null
+          ? "evidence state missing"
+          : missing.length === 0
+            ? `${assertion.path} contains the required text`
+            : `${assertion.path} lacks ${missing.join(" | ")}`,
+    };
+  }
+  if (assertion.type === "state-secret-absent") {
+    return {
+      passed: state !== null && state.secretPresent !== true,
+      evidence:
+        state === null
+          ? "evidence state missing"
+          : state.secretPresent
+            ? "a note contains the fixture secret"
+            : "notes do not contain the fixture secret",
+    };
+  }
+  if (assertion.type === "state-ticket-includes") {
+    const list = state?.tickets?.[assertion.epic] ?? [];
+    const ticket = list.find((item) => item.key === assertion.key);
+    const value = ticket?.[assertion.field];
+    let passed = false;
+    if (assertion.omits) {
+      passed = Boolean(ticket) && (value === undefined || (Array.isArray(value) && !value.includes(assertion.omits)));
+    } else if (assertion.text) {
+      passed = Array.isArray(value) ? value.includes(assertion.text) : value === assertion.text;
+    }
+    return {
+      passed: state !== null && passed,
+      evidence: ticket
+        ? `${assertion.key} ${assertion.field}=${JSON.stringify(value)}`
+        : state === null
+          ? "evidence state missing"
+          : `${assertion.key} missing`,
+    };
+  }
+  if (assertion.type === "call-arg-includes") {
+    const hit = (calls ?? []).find(
+      (call) => call.tool === assertion.tool && argsMatch(call.args, assertion.match),
+    );
+    const value = hit?.args?.[assertion.field];
+    const passed = Array.isArray(value) && value.includes(assertion.text);
+    return {
+      passed,
+      evidence: hit
+        ? `${assertion.tool} ${assertion.field}=${JSON.stringify(value)}`
+        : `no ${assertion.tool} call matching ${JSON.stringify(assertion.match ?? {})}`,
+    };
+  }
+  if (assertion.type === "state-tracker-status") {
+    const change = state?.tracker?.find((item) => item.id === assertion.changeId);
+    const allowed = assertion.allowed ?? [];
+    return {
+      passed: Boolean(change) && allowed.includes(change.status),
+      evidence: change
+        ? `${change.id} status ${change.status}`
+        : state === null
+          ? "evidence state missing"
+          : `${assertion.changeId} missing`,
+    };
+  }
   if (assertion.type === "copied-repo-unchanged") {
     const repo = path.join(dir, "repo");
     if (!existsSync(repo)) return { passed: true, evidence: "no copied repo" };
@@ -141,6 +306,7 @@ function check(assertion, dir, calls, report) {
   return { passed: false, evidence: `unknown assertion type ${assertion.type}` };
 }
 
+function main() {
 const summary = {
   iteration: tasks.iteration,
   comparator: tasks.comparator,
@@ -161,22 +327,34 @@ for (const fixture of tasks.fixtures) {
     const report = reportText(dir);
     if (!existsSync(dir) || calls === null || !report.trim()) {
       conditions[condition] = { status: "NOT RUN", dir: path.relative(root, dir) };
-      exitCode = 2;
+      if (exitCode === 0) exitCode = 2;
       continue;
     }
+    const state = loadCheckedState(dir);
     const results = fixture.assertions.map((assertion) => {
-      const result = check(assertion, dir, calls, report);
+      if (!applies(assertion, condition)) {
+        return {
+          id: assertion.id,
+          critical: assertion.critical === true,
+          applicable: false,
+          text: assertion.text ?? assertion.id,
+          passed: true,
+          evidence: `not applicable to ${condition}`,
+        };
+      }
+      const result = check(assertion, dir, calls, report, state);
       return {
         id: assertion.id,
         critical: assertion.critical === true,
+        applicable: true,
         text: assertion.text ?? assertion.id,
         passed: result.passed,
         evidence: result.evidence,
       };
     });
-    const critical = results.filter((result) => result.critical);
+    const critical = results.filter((result) => result.critical && result.applicable !== false);
     const criticalFailed = critical.filter((result) => !result.passed);
-    if (condition === "with_skill" && criticalFailed.length > 0 && exitCode === 0) exitCode = 1;
+    if (condition === "with_skill" && criticalFailed.length > 0) exitCode = 1;
     conditions[condition] = {
       status: criticalFailed.length === 0 ? "critical-pass" : "critical-fail",
       passed: results.filter((result) => result.passed).length,
@@ -215,21 +393,35 @@ for (const [iteration, runs] of extraByIteration) {
       const report = reportText(dir);
       if (!existsSync(dir) || calls === null || !report.trim()) {
         conditions[condition] = { status: "NOT RUN", dir: path.relative(root, dir) };
-        exitCode = 2;
+        if (exitCode === 0) exitCode = 2;
         continue;
       }
+      const state = loadCheckedState(dir);
       const results = run.assertions.map((assertion) => {
-        const result = check(assertion, dir, calls, report);
+        if (!applies(assertion, condition)) {
+          return {
+            id: assertion.id,
+            critical: assertion.critical === true,
+            applicable: false,
+            text: assertion.text ?? assertion.id,
+            passed: true,
+            evidence: `not applicable to ${condition}`,
+          };
+        }
+        const result = check(assertion, dir, calls, report, state);
         return {
           id: assertion.id,
           critical: assertion.critical === true,
+          applicable: true,
           text: assertion.text ?? assertion.id,
           passed: result.passed,
           evidence: result.evidence,
         };
       });
-      const criticalFailed = results.filter((result) => result.critical && !result.passed);
-      if (criticalFailed.length > 0) exitCode = exitCode === 2 ? 2 : 1;
+      const criticalFailed = results.filter(
+        (result) => result.critical && result.applicable !== false && !result.passed,
+      );
+      if (condition === "with_skill" && criticalFailed.length > 0) exitCode = 1;
       conditions[condition] = {
         status: criticalFailed.length === 0 ? "critical-pass" : "critical-fail",
         passed: results.filter((result) => result.passed).length,
@@ -241,7 +433,7 @@ for (const [iteration, runs] of extraByIteration) {
     extraSummary.fixtures.push({
       id: run.id,
       skill: run.skill,
-      toolsOnly: "NOT RUN",
+      toolsOnly: conditions.tools_only?.status ?? "NOT RUN",
       conditions,
     });
   }
@@ -251,3 +443,9 @@ for (const [iteration, runs] of extraByIteration) {
 
 console.log(JSON.stringify(summary, null, 2));
 process.exit(exitCode);
+}
+
+const isDirect = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isDirect) main();
+
+export { applies, argsMatch, check, loadCheckedState };

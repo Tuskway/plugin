@@ -1,0 +1,9 @@
+{
+  "policy": { "allow": ["epic_list", "epic_get"] },
+  "workspaces": [],
+  "epics": [],
+  "noteFiles": {},
+  "tickets": {},
+  "comments": [],
+  "trackerChanges": []
+}
