@@ -1,0 +1,13 @@
+{
+  "notes": {
+    "fixture/receipts": {
+      "notes.md": "# Printed receipts\n\n## Decisions\n\n- D1: The tax line stays as printed today.\n",
+      "tech-design/tax.md": "# Tax line\n\nThe tax line stays as printed today.\n"
+    }
+  },
+  "tickets": {},
+  "secretPresent": false,
+  "tracker": [],
+  "suggestionCount": 0,
+  "mock": true
+}

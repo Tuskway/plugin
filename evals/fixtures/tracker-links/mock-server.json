@@ -1,0 +1,327 @@
+{
+  "policy": {
+    "allow": [
+      "epic_list",
+      "epic_get",
+      "ticket_get",
+      "ticket_list",
+      "notes_read"
+    ]
+  },
+  "workspaces": [
+    {
+      "slug": "fixture",
+      "name": "Fixture",
+      "role": "owner"
+    }
+  ],
+  "epics": [
+    {
+      "workspace": "fixture",
+      "slug": "gh-same",
+      "title": "Same-repo GitHub",
+      "status": "draft",
+      "trackerProvider": "github",
+      "trackerExternalId": null,
+      "trackerRepo": "acme/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/gh-same"
+    },
+    {
+      "workspace": "fixture",
+      "slug": "gh-cross",
+      "title": "Cross-repo GitHub",
+      "status": "draft",
+      "trackerProvider": "github",
+      "trackerExternalId": null,
+      "trackerRepo": "fixture/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/gh-cross"
+    },
+    {
+      "workspace": "fixture",
+      "slug": "gl-sub",
+      "title": "GitLab subgroup",
+      "status": "draft",
+      "trackerProvider": "gitlab",
+      "trackerExternalId": null,
+      "trackerRepo": "group/sub/shop",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/gl-sub"
+    },
+    {
+      "workspace": "fixture",
+      "slug": "linear-eng",
+      "title": "Linear",
+      "status": "draft",
+      "trackerProvider": "linear",
+      "trackerExternalId": null,
+      "trackerRepo": "acme/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/linear-eng"
+    },
+    {
+      "workspace": "fixture",
+      "slug": "jira-proj",
+      "title": "Jira",
+      "status": "draft",
+      "trackerProvider": "jira",
+      "trackerExternalId": null,
+      "trackerRepo": "acme/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/jira-proj"
+    },
+    {
+      "workspace": "fixture",
+      "slug": "none-tracker",
+      "title": "No tracker",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": null,
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/none-tracker"
+    },
+    {
+      "workspace": "fixture",
+      "slug": "gh-multi",
+      "title": "Two GitHub tickets",
+      "status": "draft",
+      "trackerProvider": "github",
+      "trackerExternalId": null,
+      "trackerRepo": "acme/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/gh-multi"
+    }
+  ],
+  "noteFiles": {},
+  "tickets": {
+    "fixture/gh-same": [
+      {
+        "key": "T1",
+        "title": "Add the return line",
+        "status": "todo",
+        "ready": true,
+        "goal": "Add the return line",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": "191",
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      }
+    ],
+    "fixture/gh-cross": [
+      {
+        "key": "T1",
+        "title": "Add the barcode",
+        "status": "todo",
+        "ready": true,
+        "goal": "Add the barcode",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": "192",
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      }
+    ],
+    "fixture/gl-sub": [
+      {
+        "key": "T1",
+        "title": "Add the footer",
+        "status": "todo",
+        "ready": true,
+        "goal": "Add the footer",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": "12",
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      }
+    ],
+    "fixture/linear-eng": [
+      {
+        "key": "T1",
+        "title": "Add the points line",
+        "status": "todo",
+        "ready": true,
+        "goal": "Add the points line",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": "ENG-42",
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      }
+    ],
+    "fixture/jira-proj": [
+      {
+        "key": "T1",
+        "title": "Rename the total",
+        "status": "todo",
+        "ready": true,
+        "goal": "Rename the total",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": "PROJ-7",
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      }
+    ],
+    "fixture/none-tracker": [
+      {
+        "key": "T1",
+        "title": "Keep the shop name",
+        "status": "todo",
+        "ready": true,
+        "goal": "Keep the shop name",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": null,
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      }
+    ],
+    "fixture/gh-multi": [
+      {
+        "key": "T1",
+        "title": "Scaffold the receipt",
+        "status": "todo",
+        "ready": true,
+        "goal": "Scaffold the receipt",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": "201",
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      },
+      {
+        "key": "T2",
+        "title": "Add the return line",
+        "status": "todo",
+        "ready": true,
+        "goal": "Add the return line",
+        "scope": "Pull request text only. Do not edit the repo.",
+        "acceptance": "The body contains the tracker line and the Tuskway line.",
+        "files": "",
+        "trackerExternalId": "202",
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": []
+      }
+    ]
+  },
+  "comments": [],
+  "trackerChanges": []
+}

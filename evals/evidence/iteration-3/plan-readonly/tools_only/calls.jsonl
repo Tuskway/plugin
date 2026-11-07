@@ -1,0 +1,7 @@
+{"at":"2026-11-07T23:01:35.961Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:36.270Z","tool":"ticket_plan","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:36.735Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:56.206Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"receipts","key":"T2"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:01:56.206Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"receipts","key":"T4"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:01:56.714Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"receipts","key":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:01:57.311Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"receipts","key":"T5"},"refused":true,"error":"fixture policy refused this tool"}

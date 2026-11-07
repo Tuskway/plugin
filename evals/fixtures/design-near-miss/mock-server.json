@@ -1,0 +1,48 @@
+{
+  "policy": {
+    "allow": [
+      "epic_list",
+      "epic_get",
+      "notes_read",
+      "notes_write",
+      "ticket_draft"
+    ]
+  },
+  "workspaces": [
+    {
+      "slug": "fixture",
+      "name": "Fixture",
+      "role": "owner"
+    }
+  ],
+  "epics": [
+    {
+      "workspace": "fixture",
+      "slug": "receipts",
+      "title": "Printed receipts",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": null,
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Write the pull request body"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/receipts"
+    }
+  ],
+  "noteFiles": {},
+  "tickets": {},
+  "comments": [],
+  "trackerChanges": []
+}

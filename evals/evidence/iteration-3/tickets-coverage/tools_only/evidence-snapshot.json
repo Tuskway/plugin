@@ -1,0 +1,82 @@
+{
+  "notes": {
+    "fixture/receipts": {
+      "notes.md": "# Printed receipts\n\n## Desired outcome\n\nPrinted receipts include the settled return line, then a barcode, and a renamed total label.\n\n## Decisions\n\n- D1: Receipt text is built in src/receipt.mjs only.\n- D2: The return copy is \"Returns within 14 days with receipt.\"\n- D3: The barcode work merges only after the return-line ticket.\n- D4: Renaming the total label shares src/receipt.mjs and has no merge order of its own.\n\n## Non-goals\n\n- Email receipts.\n- A PDF renderer.\n",
+      "tech-design/INDEX.md": "| Title | File | Ticket | Tracker |\n|---|---|---|---|\n| Return line | return-line.md | T2 | |\n| Barcode | barcode.md | T4 | |\n| Total label | total-label.md | T5 | |\n",
+      "tech-design/return-line.md": "# Return line\n\n## Behavior\n\nrenderReceipt appends the exact line \"Returns within 14 days with receipt.\" after the total line.\n\n## Affected code\n\n- src/receipt.mjs — the function returns the item line and `Total:` line today.\n- src/receipt.test.mjs — the test named \"includes the total\" must keep passing.\n\n## Verification\n\n`node --test src/receipt.test.mjs` from the delivery repo.\n",
+      "tech-design/barcode.md": "# Barcode\n\n## Behavior\n\nAfter the return line is in the receipt, renderReceipt appends a barcode line. This ticket merges only after T2.\n\n## Affected code\n\n- src/receipt.mjs — same file as the return line. There is no barcode file in the repo.\n",
+      "tech-design/total-label.md": "# Total label\n\n## Behavior\n\nThe total line label changes from `Total:` to `Amount due:`. It does not wait on the return line or the barcode.\n\n## Affected code\n\n- src/receipt.mjs — same file, no required merge order.\n- src/receipt.test.mjs — \"includes the total\" currently expects `Total:`.\n",
+      "tickets/T2.md": "---\ntitle: \"Return line\"\nticket: T2\nepic: receipts\n---\n\n## Goal\n\nrenderReceipt appends the exact line \"Returns within 14 days with receipt.\" after the total line.\n\n## Scope\n\nIn src/receipt.mjs, keep the item line and the Total: line, then append that return line. Leave src/receipt.test.mjs able to pass the existing test named \"includes the total\". Do not add a barcode and do not rename the total label.\n\n## Acceptance criteria\n\nrenderReceipt returns the item line, then a line that still begins with Total:, then the exact line Returns within 14 days with receipt. The test named \"includes the total\" still passes. From the delivery repo, node --test src/receipt.test.mjs passes.\n\n## Files\n\nsrc/receipt.mjs,src/receipt.test.mjs\n",
+      "tickets/T4.md": "---\ntitle: \"Barcode\"\nticket: T4\nepic: receipts\n---\n\n## Goal\n\nAfter the return line is in the receipt, renderReceipt appends a barcode line.\n\n## Scope\n\nChange only src/receipt.mjs, the same file as the return line. There is no barcode file in the repo; do not add one. This work merges only after T2.\n\n## Acceptance criteria\n\nrenderReceipt appends a barcode line after the return line. The change is only in src/receipt.mjs. The ticket is merged only after T2.\n\n## Files\n\nsrc/receipt.mjs\n",
+      "tickets/T5.md": "---\ntitle: \"Total label\"\nticket: T5\nepic: receipts\n---\n\n## Goal\n\nThe total line label changes from Total: to Amount due:.\n\n## Scope\n\nIn src/receipt.mjs, rename the total line label from Total: to Amount due:. In src/receipt.test.mjs, the test named \"includes the total\" currently expects Total: and must expect Amount due: instead. This ticket does not wait on the return line or the barcode.\n\n## Acceptance criteria\n\nrenderReceipt prints Amount due: where it printed Total:. The test named \"includes the total\" expects Amount due:. The ticket has no merge dependency on T2 or T4. From the delivery repo, node --test src/receipt.test.mjs passes.\n\n## Files\n\nsrc/receipt.mjs,src/receipt.test.mjs\n"
+    }
+  },
+  "tickets": {
+    "fixture/receipts": [
+      {
+        "key": "T2",
+        "status": "todo",
+        "ready": false,
+        "waitingOn": [],
+        "heldBy": null,
+        "title": "Return line",
+        "goal": "renderReceipt appends the exact line \"Returns within 14 days with receipt.\" after the total line.",
+        "scope": "In src/receipt.mjs, keep the item line and the Total: line, then append that return line. Leave src/receipt.test.mjs able to pass the existing test named \"includes the total\". Do not add a barcode and do not rename the total label.",
+        "acceptance": "renderReceipt returns the item line, then a line that still begins with Total:, then the exact line Returns within 14 days with receipt. The test named \"includes the total\" still passes. From the delivery repo, node --test src/receipt.test.mjs passes.",
+        "files": [
+          "src/receipt.mjs",
+          "src/receipt.test.mjs"
+        ],
+        "dependsOn": [],
+        "areas": [
+          "src/receipt.mjs",
+          "src/receipt.test.mjs"
+        ]
+      },
+      {
+        "key": "T4",
+        "status": "todo",
+        "ready": false,
+        "waitingOn": [],
+        "heldBy": null,
+        "title": "Barcode",
+        "goal": "After the return line is in the receipt, renderReceipt appends a barcode line.",
+        "scope": "Change only src/receipt.mjs, the same file as the return line. There is no barcode file in the repo; do not add one. This work merges only after T2.",
+        "acceptance": "renderReceipt appends a barcode line after the return line. The change is only in src/receipt.mjs. The ticket is merged only after T2.",
+        "files": [
+          "src/receipt.mjs"
+        ],
+        "dependsOn": [
+          "T2"
+        ],
+        "areas": [
+          "src/receipt.mjs"
+        ]
+      },
+      {
+        "key": "T5",
+        "status": "todo",
+        "ready": false,
+        "waitingOn": [],
+        "heldBy": null,
+        "title": "Total label",
+        "goal": "The total line label changes from Total: to Amount due:.",
+        "scope": "In src/receipt.mjs, rename the total line label from Total: to Amount due:. In src/receipt.test.mjs, the test named \"includes the total\" currently expects Total: and must expect Amount due: instead. This ticket does not wait on the return line or the barcode.",
+        "acceptance": "renderReceipt prints Amount due: where it printed Total:. The test named \"includes the total\" expects Amount due:. The ticket has no merge dependency on T2 or T4. From the delivery repo, node --test src/receipt.test.mjs passes.",
+        "files": [
+          "src/receipt.mjs",
+          "src/receipt.test.mjs"
+        ],
+        "dependsOn": [],
+        "areas": [
+          "src/receipt.mjs",
+          "src/receipt.test.mjs"
+        ]
+      }
+    ]
+  },
+  "secretPresent": false,
+  "tracker": [],
+  "suggestionCount": 0,
+  "mock": true
+}

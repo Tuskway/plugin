@@ -1,6 +1,6 @@
 {
-  "status": "NOT RUN",
-  "reason": "This environment has no host skill router. Explicit skill loads are not routing results.",
+  "status": "HOST ROUTER NOT RUN",
+  "reason": "This environment has no host skill router. Explicit skill loads are not routing results. Iteration 3 routing-descriptions is a one-model description-match proxy, not a client router.",
   "cases": [
     {
       "id": "design-positive",

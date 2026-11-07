@@ -1,6 +1,6 @@
 # Client notes
 
-These rows are the install and sign-in lines from the plugin README. They were compared with client docs and were not run in those clients. T5 records real client results. Repeat a row only after the user tells you which client this session is. Do not invent a command for a client that is not in the table. An unknown client means ask, or point at the README, not a guessed flag.
+These rows are the sign-in lines from the plugin README, not the install commands. Use a row only when `epic_list` is present and the server rejected the call. They were compared with client docs and were not run in those clients. T5 records real client results. Repeat a row only after the user tells you which client this session is. Do not invent a command for a client that is not in the table. An unknown client means ask, or point at the README, not a guessed flag. Missing tools are an install step the user types from the README, not one of these sign-in rows.
 
 | Client | Sign in, as documented |
 |---|---|

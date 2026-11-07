@@ -1,0 +1,5 @@
+{"at":"2026-11-07T23:05:28.202Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:05:29.967Z","tool":"note_comment","args":{"workspace":"fixture","epic":"receipts","action":"list"},"refused":false,"error":null}
+{"at":"2026-11-07T23:05:36.542Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:05:36.781Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:06:41.282Z","tool":"note_comment","args":{"workspace":"fixture","epic":"receipts","action":"reply","id":"cmt_contradict","body":"Replacing D1 so the tax line is removed would contradict decision D1, which says the tax line stays as printed today. tech-design/tax.md records the same. I am not changing notes.md. Should D1 be revisited?"},"refused":false,"error":null}

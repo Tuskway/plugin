@@ -183,8 +183,8 @@ function ticketView(state, epic, ticket) {
     workspace: epic.workspace,
     epic: epic.slug,
     url: noteUrl(epic.workspace, epic.slug, `tickets/${ticket.key}.md`),
-    trackerProvider: epic.trackerProvider,
-    trackerExternalId: epic.trackerExternalId,
+    trackerProvider: ticket.trackerProvider ?? epic.trackerProvider,
+    trackerExternalId: ticket.trackerExternalId ?? epic.trackerExternalId,
     dependsOn: (ticket.dependsOn ?? []).map((key) => ({
       key,
       epic: epic.slug,
@@ -488,6 +488,13 @@ function dispatch(state, tool, args) {
     }
     const list = (state.tickets[epicKey(args.workspace, args.epic)] ??= []);
     const existing = list.find((item) => item.key === args.key);
+    if (
+      existing &&
+      args.expectedSha256 &&
+      sha256(briefBody(existing, args.epic)) !== args.expectedSha256
+    ) {
+      return { error: "stale sha256", mock: true };
+    }
     const next = existing ?? {
       key: args.key,
       status: "todo",
@@ -503,7 +510,17 @@ function dispatch(state, tool, args) {
     if (args.dependsOn) next.dependsOn = args.dependsOn;
     if (args.areas) next.areas = args.areas;
     if (!existing) list.push(next);
-    return { key: next.key, path: `tickets/${next.key}.md`, mock: true };
+    const body = briefBody(next, args.epic);
+    const notes = (state.notes[epicKey(args.workspace, args.epic)] ??= {});
+    notes[`tickets/${next.key}.md`] = body;
+    return {
+      key: next.key,
+      title: next.title,
+      path: `tickets/${next.key}.md`,
+      sha: sha256(body),
+      url: noteUrl(args.workspace, args.epic, `tickets/${next.key}.md`),
+      mock: true,
+    };
   }
   if (tool === "note_comment") {
     const error = missing(["workspace", "epic", "action"]);
@@ -512,6 +529,16 @@ function dispatch(state, tool, args) {
     if (!epic) return { error: "epic not found", mock: true };
     if (args.action === "list") {
       return state.comments.filter((comment) => comment.epic === args.epic);
+    }
+    if (args.action === "reply") {
+      if (!args.id || !args.body) return { error: "missing id or body", mock: true };
+      if (epic.status === "archived") return { error: "reply refused", mock: true };
+      const comment = state.comments.find((item) => item.id === args.id);
+      if (!comment) return { error: "comment not found", mock: true };
+      if (comment.status === "resolved") return { error: "reply to resolved comment refused", mock: true };
+      comment.replies = comment.replies ?? [];
+      comment.replies.push({ author: "fixture-agent", body: args.body });
+      return { id: comment.id, status: comment.status, replyCount: comment.replies.length, mock: true };
     }
     if (args.action === "resolve") {
       if (!epic.permissions.canManageInbox || epic.status === "archived") {
@@ -544,7 +571,11 @@ function dispatch(state, tool, args) {
     const error = missing(["workspace", "epic", "action"]);
     if (error) return error;
     if (args.action === "list") {
-      return state.trackerChanges.filter((change) => !args.status || change.status === args.status);
+      return state.trackerChanges.filter((change) => {
+        if (change.epic && change.epic !== args.epic) return false;
+        if (change.workspace && change.workspace !== args.workspace) return false;
+        return !args.status || change.status === args.status;
+      });
     }
     if (args.action === "get") {
       const change = state.trackerChanges.find((item) => item.id === args.id);

@@ -1,0 +1,30 @@
+{"at":"2026-11-07T23:01:39.894Z","tool":"epic_get","args":{"workspace":"fixture","epic":"gh-same"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:39.959Z","tool":"epic_get","args":{"workspace":"fixture","epic":"gh-cross"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:40.503Z","tool":"epic_get","args":{"workspace":"fixture","epic":"gl-sub"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:41.002Z","tool":"epic_get","args":{"workspace":"fixture","epic":"linear-eng"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:41.461Z","tool":"epic_get","args":{"workspace":"fixture","epic":"jira-proj"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:42.033Z","tool":"epic_get","args":{"workspace":"fixture","epic":"none-tracker"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:42.641Z","tool":"epic_get","args":{"workspace":"fixture","epic":"gh-multi"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:48.899Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"gh-same","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:49.314Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"gh-cross","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:49.826Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"gl-sub","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:50.383Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"linear-eng","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:50.977Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"jira-proj","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:51.567Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"none-tracker","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:52.118Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"gh-multi","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:52.749Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"gh-multi","key":"T2"},"refused":false,"error":null}
+{"at":"2026-11-07T23:04:15.717Z","tool":"notes_read","args":{"workspace":"fixture","epic":"gh-same","path":"tech-design/INDEX.md"},"refused":false,"error":"note not found"}
+{"at":"2026-11-07T23:04:15.718Z","tool":"notes_search","args":{"workspace":"fixture","epic":"gh-same","query":"return line","boostTicket":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:04:16.282Z","tool":"notes_read","args":{"workspace":"fixture","epic":"gh-cross","path":"tech-design/INDEX.md"},"refused":false,"error":"note not found"}
+{"at":"2026-11-07T23:04:16.851Z","tool":"notes_search","args":{"workspace":"fixture","epic":"gh-cross","query":"barcode","boostTicket":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:04:17.363Z","tool":"notes_read","args":{"workspace":"fixture","epic":"gl-sub","path":"tech-design/INDEX.md"},"refused":false,"error":"note not found"}
+{"at":"2026-11-07T23:04:17.872Z","tool":"notes_search","args":{"workspace":"fixture","epic":"gl-sub","query":"footer","boostTicket":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:04:18.483Z","tool":"notes_read","args":{"workspace":"fixture","epic":"linear-eng","path":"tech-design/INDEX.md"},"refused":false,"error":"note not found"}
+{"at":"2026-11-07T23:04:19.102Z","tool":"notes_search","args":{"workspace":"fixture","epic":"linear-eng","query":"points line","boostTicket":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:04:19.678Z","tool":"notes_read","args":{"workspace":"fixture","epic":"jira-proj","path":"tech-design/INDEX.md"},"refused":false,"error":"note not found"}
+{"at":"2026-11-07T23:04:20.290Z","tool":"notes_search","args":{"workspace":"fixture","epic":"jira-proj","query":"total","boostTicket":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:04:20.942Z","tool":"notes_read","args":{"workspace":"fixture","epic":"none-tracker","path":"tech-design/INDEX.md"},"refused":false,"error":"note not found"}
+{"at":"2026-11-07T23:04:21.513Z","tool":"notes_search","args":{"workspace":"fixture","epic":"none-tracker","query":"shop name","boostTicket":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:04:22.137Z","tool":"notes_read","args":{"workspace":"fixture","epic":"gh-multi","path":"tech-design/INDEX.md"},"refused":false,"error":"note not found"}
+{"at":"2026-11-07T23:04:22.740Z","tool":"notes_search","args":{"workspace":"fixture","epic":"gh-multi","query":"receipt","boostTicket":"T1"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:04:23.449Z","tool":"notes_search","args":{"workspace":"fixture","epic":"gh-multi","query":"return line","boostTicket":"T2"},"refused":true,"error":"fixture policy refused this tool"}

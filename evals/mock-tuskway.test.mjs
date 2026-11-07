@@ -118,6 +118,110 @@ test("plan fixture returns the server wave instead of an empty derivation", () =
   assert.equal(plan.body.ready.length, 2);
 });
 
+test("a comment reply stays open and a stale overwrite is rejected", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "tuskway-mock-"));
+  try {
+    const args = [
+      "--fixture",
+      path.join(root, "evals/fixtures/change-safety"),
+      "--state",
+      path.join(dir, "state"),
+      "--log",
+      path.join(dir, "calls.jsonl"),
+    ];
+    const reply = JSON.parse(execFileSync("node", [mock, ...args, "note_comment", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      action: "reply",
+      id: "cmt_contradict",
+      body: "Left open. The decision stays.",
+    })], { encoding: "utf8" }));
+    assert.equal(reply.status, "open");
+    assert.equal(reply.replyCount, 1);
+    const read = JSON.parse(execFileSync("node", [mock, ...args, "notes_read", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      path: "notes.md",
+    })], { encoding: "utf8" }));
+    const stale = JSON.parse(execFileSync("node", [mock, ...args, "notes_write", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      path: "notes.md",
+      body: "replaced",
+      expectedSha256: "0".repeat(64),
+    })], { encoding: "utf8" }));
+    assert.equal(stale.error, "stale sha256");
+    assert.equal(read.sha256.length, 64);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("plan override survives a second call in the same state directory", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "tuskway-mock-"));
+  try {
+    const args = [
+      "--fixture",
+      path.join(root, "evals/fixtures/plan-readonly"),
+      "--state",
+      path.join(dir, "state"),
+      "--log",
+      path.join(dir, "calls.jsonl"),
+    ];
+    const first = JSON.parse(execFileSync("node", [mock, ...args, "ticket_plan", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+    })], { encoding: "utf8" }));
+    const second = JSON.parse(execFileSync("node", [mock, ...args, "ticket_plan", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+    })], { encoding: "utf8" }));
+    assert.deepEqual(second.waves, first.waves);
+    assert.equal(second.held[0].key, "T4");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("ticket external ids are per ticket and a draft stores dependsOn", () => {
+  const cross = call("tracker-links", "ticket_get", {
+    workspace: "fixture",
+    epic: "gh-cross",
+    key: "T1",
+  });
+  assert.equal(cross.body.trackerExternalId, "192");
+  assert.equal(cross.body.trackerProvider, "github");
+  const dir = mkdtempSync(path.join(tmpdir(), "tuskway-mock-"));
+  try {
+    const args = [
+      "--fixture",
+      path.join(root, "evals/fixtures/tickets-coverage"),
+      "--state",
+      path.join(dir, "state"),
+      "--log",
+      path.join(dir, "calls.jsonl"),
+    ];
+    const drafted = JSON.parse(execFileSync("node", [mock, ...args, "ticket_draft", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      key: "T4",
+      title: "Barcode",
+      dependsOn: ["T2"],
+      areas: ["src/receipt.mjs"],
+    })], { encoding: "utf8" }));
+    assert.equal(drafted.mock, true);
+    const read = JSON.parse(execFileSync("node", [mock, ...args, "ticket_get", "--args", JSON.stringify({
+      workspace: "fixture",
+      epic: "receipts",
+      key: "T4",
+    })], { encoding: "utf8" }));
+    assert.deepEqual(read.dependsOn.map((item) => item.key), ["T2"]);
+    assert.deepEqual(read.areas, ["src/receipt.mjs"]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("setup fixture surfaces the private-beta error", () => {
   const listed = call("setup-boundary", "epic_list", {});
   assert.match(listed.body.error, /private beta/);

@@ -4,7 +4,11 @@ These fixtures check the authored skills against a mock Tuskway server. The mock
 
 The old generated snapshot at `7933ea3` is unavailable. GitHub returned 404 for that file. It was not recreated.
 
-`evals/routing.json` is a routing prompt list. It has not been run. Loading a skill by path is explicit execution, not a routing pass.
+`evals/routing.json` is a routing prompt list. This environment has no host skill router, so those prompts are not a routing pass. `routing-descriptions` in iteration 3 is a description-match proxy: one model saw the skill descriptions and labeled each prompt. It is not evidence that a client would select the skill. Loading a skill by path is explicit execution.
+
+A question mark in a report is not evidence that the agent asked a useful question. Calling `ticket_get` for an ambiguous key is not a failure by itself. The failure is choosing that ticket and continuing. Iteration 1 and 2 were regraded on that basis. The saved reports were not rewritten.
+
+Iteration 3 agents are instructed not to read `mock-server.json`, `tasks.json`, or other evidence. Iteration 1 reports show those runs read fixture files and the mock source, so they are model-written but not blind to the fixture. The old generated snapshot remains unavailable. Iteration 3 `with_skill` critical checks passed. `change-safety` tools-only applied a contradicting decision, and `setup-empty` tools-only omitted `https://tuskway.com`. Those two stay failed. Several other pairs matched on the graded outcome. See `evals/evidence/human-review.md`.
 
 ## Run one case
 
@@ -27,6 +31,6 @@ Grade recorded outputs:
 node evals/grade.mjs
 ```
 
-Exit 2 means a required run is missing. Exit 1 means a `with_skill` critical assertion failed. A `tools_only` critical failure stays in `evals/evidence/iteration-1/grading-summary.json` and does not by itself change the exit code. The grader does not judge usefulness. That review is `evals/evidence/human-review.md` and is not Mathis's approval.
+Exit 1 means a `with_skill` critical assertion failed. Exit 2 means a required run is missing and no `with_skill` critical assertion failed. A `tools_only` critical failure stays in the grading summary and does not by itself change the exit code. The grader does not judge usefulness. That review is `evals/evidence/human-review.md` and is not Mathis's approval.
 
 `tasks.extraRuns` grades explicit iteration-2 directories. A missing `tools_only` directory on those runs is NOT RUN. `intake-existing`, `tickets-coverage`, and `tracker-links` were not executed. Mock `state/` directories are gitignored because they copy fixture comment bodies.

@@ -1,0 +1,16 @@
+{"at":"2026-11-07T23:01:36.993Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:37.024Z","tool":"epic_get","args":{"workspace":"fixture","epic":"reader-shop"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:37.665Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"list"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:38.463Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"reader-shop","action":"list"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:48.778Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:49.229Z","tool":"notes_read","args":{"workspace":"fixture","epic":"reader-shop","path":"notes.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:49.876Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"get","id":"ch_malicious"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:50.486Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"receipts","action":"get","id":"ch_contradict"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:51.145Z","tool":"tracker_changes","args":{"workspace":"fixture","epic":"reader-shop","action":"get","id":"ch_reader"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:51.704Z","tool":"notes_list","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:52.226Z","tool":"notes_list","args":{"workspace":"fixture","epic":"reader-shop"},"refused":false,"error":null}
+{"at":"2026-11-07T23:01:52.760Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"receipts"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:01:53.386Z","tool":"design_get","args":{"workspace":"fixture","epic":"receipts"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:02:05.509Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md"},"refused":false,"error":null}
+{"at":"2026-11-07T23:02:06.045Z","tool":"notes_search","args":{"workspace":"fixture","epic":"receipts","query":"tax decision"},"refused":true,"error":"fixture policy refused this tool"}
+{"at":"2026-11-07T23:02:06.587Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"reader-shop"},"refused":true,"error":"fixture policy refused this tool"}
