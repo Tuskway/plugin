@@ -24,7 +24,7 @@ When it has several, list epics and compare `trackerRepo` with the delivery repo
 - `https://github.com/acme/receipts.git` matches `acme/receipts`
 - `https://gitlab.com/group/sub/receipts.git` matches `group/sub/receipts`
 
-Match only a remote you read from the repo. Linear and Jira identifiers do not identify a delivery repo. Archived epics are omitted from the list unless you pass `includeArchived`; naming one still opens it in `epic_get`.
+Match only a remote you read from the delivery repo the user named. Run the remote command in that directory, and use it only when that directory is the git toplevel. A fixture or package nested inside a larger checkout does not inherit the outer remote. No remote of its own means ask. Linear and Jira identifiers do not identify a delivery repo. Archived epics are omitted from the list unless you pass `includeArchived`; naming one still opens it in `epic_get`.
 
 Zero matches, or more than one, means ask. Show the candidate slugs and titles. Do not pick the first row.
 

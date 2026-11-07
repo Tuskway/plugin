@@ -1,0 +1,4 @@
+{"at":"2026-11-07T22:41:25.403Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T22:41:28.383Z","tool":"note_comment","args":{"workspace":"fixture","epic":"receipts","action":"list"},"refused":false,"error":null}
+{"at":"2026-11-07T22:41:38.747Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/tax.md"},"refused":false,"error":null}
+{"at":"2026-11-07T22:41:39.419Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}

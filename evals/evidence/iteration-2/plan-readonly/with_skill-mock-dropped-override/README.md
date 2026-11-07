@@ -1,0 +1,1 @@
+This run is not a pass. `mock-tuskway.mjs` dropped `planOverride` while loading state, so `ticket_plan` returned an empty derivation. The skill followed that empty response. The mock was fixed and the fixture was run again in `../with_skill`.

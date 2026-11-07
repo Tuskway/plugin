@@ -1,0 +1,20 @@
+{"at":"2026-11-07T22:32:11.945Z","tool":"epic_list","args":{},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:11.976Z","tool":"epic_list","args":{"workspace":"fixture"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:14.366Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:14.395Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"loyalty"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:14.421Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"reader-shop"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:18.486Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"receipts","key":"T5"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:18.516Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"loyalty","key":"T5"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:18.547Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:18.578Z","tool":"epic_get","args":{"workspace":"fixture","epic":"loyalty"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:26.561Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:26.589Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"receipts","key":"T4"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:38.945Z","tool":"epic_get","args":{"workspace":"fixture","epic":"reader-shop"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:38.979Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"reader-shop","key":"T2"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:51.829Z","tool":"notes_read","args":{"workspace":"fixture","epic":"reader-shop","path":"tech-design/tax.md"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:51.867Z","tool":"notes_read","args":{"workspace":"fixture","epic":"reader-shop","path":"notes.md"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:51.898Z","tool":"notes_search","args":{"workspace":"fixture","epic":"reader-shop","query":"tax printed","boostTicket":"T2"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:56.293Z","tool":"epic_get","args":{"workspace":"fixture","epic":"archive-store"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:56.323Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"archive-store","key":"T1"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:56.353Z","tool":"notes_read","args":{"workspace":"fixture","epic":"archive-store","path":"tech-design/header.md"},"refused":false,"error":null}
+{"at":"2026-11-07T22:32:56.381Z","tool":"notes_read","args":{"workspace":"fixture","epic":"archive-store","path":"notes.md"},"refused":false,"error":null}

@@ -27,6 +27,6 @@ Grade recorded outputs:
 node evals/grade.mjs
 ```
 
-Exit 2 means a fixture was not run. A critical failure is recorded in `evals/evidence/iteration-1/grading-summary.json`. The grader does not judge usefulness. That review is a separate note and is not Mathis's approval.
+Exit 2 means a required run is missing. Exit 1 means a `with_skill` critical assertion failed. A `tools_only` critical failure stays in `evals/evidence/iteration-1/grading-summary.json` and does not by itself change the exit code. The grader does not judge usefulness. That review is `evals/evidence/human-review.md` and is not Mathis's approval.
 
-`design-normal-paraphrase` stays skipped until a skill revision needs a fresh rerun.
+`tasks.extraRuns` grades explicit iteration-2 directories. A missing `tools_only` directory on those runs is NOT RUN. `intake-existing`, `tickets-coverage`, and `tracker-links` were not executed. Mock `state/` directories are gitignored because they copy fixture comment bodies.

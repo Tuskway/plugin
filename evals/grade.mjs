@@ -176,6 +176,7 @@ for (const fixture of tasks.fixtures) {
     });
     const critical = results.filter((result) => result.critical);
     const criticalFailed = critical.filter((result) => !result.passed);
+    if (condition === "with_skill" && criticalFailed.length > 0 && exitCode === 0) exitCode = 1;
     conditions[condition] = {
       status: criticalFailed.length === 0 ? "critical-pass" : "critical-fail",
       passed: results.filter((result) => result.passed).length,
@@ -189,5 +190,64 @@ for (const fixture of tasks.fixtures) {
 
 mkdirSync(iterationDir, { recursive: true });
 writeFileSync(path.join(iterationDir, "grading-summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
+
+const extraByIteration = new Map();
+for (const run of tasks.extraRuns ?? []) {
+  const list = extraByIteration.get(run.iteration) ?? [];
+  list.push(run);
+  extraByIteration.set(run.iteration, list);
+}
+
+for (const [iteration, runs] of extraByIteration) {
+  const extraDir = path.join(root, "evals/evidence", `iteration-${iteration}`);
+  const extraSummary = {
+    iteration,
+    comparator: tasks.comparator,
+    gradedAt: new Date().toISOString(),
+    note: "These runs are explicit with_skill executions. A missing tools_only directory is NOT RUN, not a pass. This file is automated assertion output, not a usefulness review.",
+    fixtures: [],
+  };
+  for (const run of runs) {
+    const conditions = {};
+    for (const condition of run.conditions ?? ["with_skill"]) {
+      const dir = path.join(extraDir, run.id, condition);
+      const calls = readCalls(dir);
+      const report = reportText(dir);
+      if (!existsSync(dir) || calls === null || !report.trim()) {
+        conditions[condition] = { status: "NOT RUN", dir: path.relative(root, dir) };
+        exitCode = 2;
+        continue;
+      }
+      const results = run.assertions.map((assertion) => {
+        const result = check(assertion, dir, calls, report);
+        return {
+          id: assertion.id,
+          critical: assertion.critical === true,
+          text: assertion.text ?? assertion.id,
+          passed: result.passed,
+          evidence: result.evidence,
+        };
+      });
+      const criticalFailed = results.filter((result) => result.critical && !result.passed);
+      if (criticalFailed.length > 0) exitCode = exitCode === 2 ? 2 : 1;
+      conditions[condition] = {
+        status: criticalFailed.length === 0 ? "critical-pass" : "critical-fail",
+        passed: results.filter((result) => result.passed).length,
+        failed: results.filter((result) => !result.passed).length,
+        criticalFailed: criticalFailed.map((result) => result.id),
+        results,
+      };
+    }
+    extraSummary.fixtures.push({
+      id: run.id,
+      skill: run.skill,
+      toolsOnly: "NOT RUN",
+      conditions,
+    });
+  }
+  mkdirSync(extraDir, { recursive: true });
+  writeFileSync(path.join(extraDir, "grading-summary.json"), `${JSON.stringify(extraSummary, null, 2)}\n`);
+}
+
 console.log(JSON.stringify(summary, null, 2));
 process.exit(exitCode);
