@@ -4,7 +4,7 @@ One plugin folder, `plugins/tuskway`, installed as-is by Claude Code, Cursor, Co
 
 The plugin connects to the hosted MCP server at `https://tuskway.com/mcp`. Sign-in is OAuth in the client. The package contains no access tokens, hooks, rule files, or subagents. The root `package.json` is private so it is not published to npm. There is no per-client build output.
 
-Workflow skill files are not in this package. `plugins/tuskway/skills/` is only a placeholder, and `setup-tuskway` is not declared yet.
+Workflow skills are authored under `plugins/tuskway/skills/`. `setup-tuskway` is not in this package yet, so neither manifest declares `onboardingSkill`.
 
 ## Private testing
 
@@ -47,7 +47,7 @@ The install lines below are the agreed client commands. They were compared with 
 | OpenCode | `npx skills add tuskway/plugin --agent opencode` and `opencode mcp add tuskway --url https://tuskway.com/mcp` | `opencode mcp auth tuskway` |
 | Pi | `pi install git:github.com/tuskway/plugin` and `pi mcp add tuskway --url https://tuskway.com/mcp` | `pi mcp login tuskway` |
 
-Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. OpenCode's skills command and Pi's package install have no workflow skills until those files land.
+Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. Those clients were not re-run after the skill files landed.
 
 ## Check the package
 

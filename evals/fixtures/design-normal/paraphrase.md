@@ -1,0 +1,1 @@
+Can you sketch the technical design for adding the return window onto printed receipts? The epic is https://tuskway.example/w/fixture/epics/receipts and the repo is evals/fixtures/receipt-repo. Just show me the proposal. Don't save it to Tuskway yet.
