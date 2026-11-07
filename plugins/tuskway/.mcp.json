@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tuskway": {
+      "type": "http",
+      "url": "https://tuskway.com/mcp"
+    }
+  }
+}
