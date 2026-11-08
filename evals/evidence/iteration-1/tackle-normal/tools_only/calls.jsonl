@@ -1,6 +1,0 @@
-{"at":"2026-11-07T22:30:05.454Z","tool":"ticket_get","args":{"workspace":"fixture","epic":"receipts","key":"T2"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:11.284Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/return-line.md"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:11.313Z","tool":"notes_search","args":{"workspace":"fixture","epic":"receipts","query":"return receipt window","boostTicket":"T2"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:11.341Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:28.803Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tickets/T2.md"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:28.830Z","tool":"ticket_update","args":{"workspace":"fixture","epic":"receipts","key":"T2","status":"in_progress"},"refused":false,"error":null}

@@ -1,6 +1,6 @@
 {
   "status": "HOST ROUTER NOT RUN",
-  "reason": "This environment has no host skill router. Explicit skill loads are not routing results. Iteration 3 routing-descriptions is a one-model description-match proxy, not a client router.",
+  "reason": "Host description routing has not been run. A model that searches the repository and opens a SKILL.md file is not a routing result. Explicit skill loads are not routing results. The description-match proxy is not a client router.",
   "cases": [
     {
       "id": "design-positive",

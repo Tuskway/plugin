@@ -52,10 +52,10 @@ Update with the client's marketplace update command. Pi and OpenCode update by r
 ## Check the package
 
 ```bash
-node --test scripts/test-manifests.mjs
+node --test scripts/test-manifests.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
 ```
 
-The schema test downloads the Agent Plugins 1.0.0 schemas.
+The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
 
 ## License
 

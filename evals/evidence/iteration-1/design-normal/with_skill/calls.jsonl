@@ -1,6 +1,0 @@
-{"at":"2026-11-07T22:30:10.026Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:10.026Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:10.412Z","tool":"design_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
-{"at":"2026-11-07T22:30:17.822Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"tech-design/INDEX.md"},"refused":false,"error":null}
-{"at":"2026-11-07T22:31:04.397Z","tool":"notes_list","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
-{"at":"2026-11-07T22:31:04.991Z","tool":"ticket_list","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}

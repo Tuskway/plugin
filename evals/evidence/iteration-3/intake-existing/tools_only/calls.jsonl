@@ -1,5 +1,0 @@
-{"at":"2026-11-07T22:58:42.349Z","tool":"epic_get","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
-{"at":"2026-11-07T22:58:44.735Z","tool":"notes_list","args":{"workspace":"fixture","epic":"receipts"},"refused":false,"error":null}
-{"at":"2026-11-07T22:58:47.443Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
-{"at":"2026-11-07T22:59:14.384Z","tool":"notes_edit","args":{"workspace":"fixture","epic":"receipts","path":"notes.md","oldString":"## Constraints\n\n- Plain string output.\n\n## Non-goals\n\n- Email receipts.\n\n## Delivery repo\n\nunknown","newString":"## Constraints\n\n- Plain string output.\n- Amounts stay preformatted strings.\n\n## Non-goals\n\n- Email receipts.\n\n## Delivery repo\n\nevals/fixtures/receipt-repo","expectedSha256":"302cc83844ff6916b2f97167cc34be2b8b67d4fd5574e7883ab17f8a851bd84d"},"refused":false,"error":null}
-{"at":"2026-11-07T22:59:16.589Z","tool":"notes_read","args":{"workspace":"fixture","epic":"receipts","path":"notes.md"},"refused":false,"error":null}
