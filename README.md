@@ -47,7 +47,7 @@ The install lines below are the agreed client commands. They were compared with 
 | OpenCode | `npx skills add tuskway/plugin --agent opencode` and `opencode mcp add tuskway --url https://tuskway.com/mcp` | `opencode mcp auth tuskway` |
 | Pi | `pi install git:github.com/tuskway/plugin` and `pi mcp add tuskway --url https://tuskway.com/mcp` | `pi mcp login tuskway` |
 
-Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. The GitHub shorthand commands in the table were not run. `evals/client-checks.json` records the local CLI versions and which checks stopped before sign-in.
+Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. The GitHub shorthand commands in the table were not run. `evals/client-checks.json` records the local CLI versions. Cursor CLI login completed. Plugin install, listed skill names, automatic routing, and MCP sign-in stay separate.
 
 ## Check the package
 
@@ -58,7 +58,7 @@ node scripts/validate.mjs
 node --test scripts/test-manifests.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
 ```
 
-`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links. `clients.install` is the plugin install from `evals/client-checks.json`, not the CLI installer. A listed skill name is discovery, not automatic routing. Resources, OAuth, workflow, and routing stay untested, and a manifest URL is not an MCP tool pass. `pathProbe` is a separate field and is `NOT RUN` for every cell: a binary on PATH is not a result. `recorded` keeps the command-level evidence. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. The local Grok check set the installer's trust switch so it would not prompt. That switch is not part of the default command. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
+`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links. `clients.install` is the plugin install from `evals/client-checks.json`, not the CLI installer. A listed skill name is discovery, not automatic routing. Cursor CLI login is not Tuskway MCP sign-in. Workflow and routing stay untested, and a manifest URL is not an MCP tool pass. `pathProbe` is a separate field and is `NOT RUN` for every cell: a binary on PATH is not a result. `recorded` keeps the command-level evidence. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. The local Grok check set the installer's trust switch so it would not prompt. That switch is not part of the default command. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
 
 ## License
 
