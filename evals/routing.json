@@ -1,6 +1,6 @@
 {
   "status": "HOST ROUTER NOT RUN",
-  "reason": "Host description routing has not been run. A model that searches the repository and opens a SKILL.md file is not a routing result. Explicit skill loads are not routing results. The description-match proxy is not a client router.",
+  "reason": "Six fresh Cursor ask mode sessions ran after the plugin was installed for the signed-in user. The system event listed no skill. The model opened a SKILL.md from the plugin cache. That is a file read, not a host selecting a skill before any tool call. Explicit skill loads are not routing results. The description-match proxy is not a client router.",
   "cases": [
     {
       "id": "design-positive",
