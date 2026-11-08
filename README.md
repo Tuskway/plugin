@@ -8,16 +8,16 @@ Nine workflow skills are authored under `plugins/tuskway/skills/`, including `sy
 
 ## Private testing
 
-This repository is private while it is being checked. Every client clones it from GitHub, so each person needs git access (`gh` login or a credential helper).
+This repository is public. Anonymous git ls-remote of `https://github.com/Tuskway/plugin.git` succeeds. Before it was public, every client needed git access (`gh` login or a credential helper).
 
 - Cursor and Grok Bot install it through a team marketplace, with the Cursor GitHub App on the repository.
-- If `codex plugin marketplace add tuskway/plugin` fails while the repository is private, clone it and run `codex plugin marketplace add` on the local folder.
+- If `codex plugin marketplace add tuskway/plugin` fails, clone it and run `codex plugin marketplace add` on the local folder.
 
 You type the install commands. The plugin does not install itself.
 
 ## Later public install
 
-After the repository is made public, the same commands are the public install. People no longer need a private grant to clone it. Cursor's individual import (Customize → Add Marketplace → Import from GitHub, User scope, then Add in the Personal tab) works only once the repository is public.
+The repository is public. The same commands are the public install. People no longer need a private grant to clone it. Cursor's individual import (Customize → Add Marketplace → Import from GitHub, User scope, then Add in the Personal tab) works only once the repository is public.
 
 A public repository is not a directory listing. This package is not submitted to the Claude directory, Cursor Marketplace, Codex plugin directory, or the MCP Registry, and the root package is not published to npm.
 
@@ -47,7 +47,7 @@ The install lines below are the agreed client commands. They were compared with 
 | OpenCode | `npx skills add tuskway/plugin --agent opencode` and `opencode mcp add tuskway --url https://tuskway.com/mcp` | `opencode mcp auth tuskway` |
 | Pi | `pi install git:github.com/tuskway/plugin` and `pi mcp add tuskway --url https://tuskway.com/mcp` | `pi mcp login tuskway` |
 
-Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. The GitHub shorthand commands in the table were not run. `evals/client-checks.json` records the local CLI versions. Cursor CLI login completed. Plugin install, listed skill names, automatic routing, and MCP sign-in stay separate.
+Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. The GitHub shorthand commands in the table were not run. `evals/client-checks.json` records the local CLI versions. Cursor CLI login completed. The public repository was installed for that user. The details screen counted nine skills and named six before an ellipsis. Six fresh sessions read skill files, so that is not automatic routing. Tuskway MCP sign-in is still waiting. Those results stay separate.
 
 ## Check the package
 
@@ -58,7 +58,7 @@ node scripts/validate.mjs
 node --test scripts/test-manifests.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
 ```
 
-`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links. `clients.install` is the plugin install from `evals/client-checks.json`, not the CLI installer. A listed skill name is discovery, not automatic routing. Cursor CLI login is not Tuskway MCP sign-in. Workflow and routing stay untested, and a manifest URL is not an MCP tool pass. `pathProbe` is a separate field and is `NOT RUN` for every cell: a binary on PATH is not a result. `recorded` keeps the command-level evidence. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. The local Grok check set the installer's trust switch so it would not prompt. That switch is not part of the default command. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
+`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links. `clients.install` is the plugin install from `evals/client-checks.json`, not the CLI installer. A listed skill name is discovery, not automatic routing. Cursor CLI login is not Tuskway MCP sign-in. A model workflow stays untested. The Cursor routing sessions read skill files, so host description routing is not shown, and a manifest URL is not an MCP tool pass. `pathProbe` is a separate field and is `NOT RUN` for every cell: a binary on PATH is not a result. `recorded` keeps the command-level evidence. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. The local Grok check set the installer's trust switch so it would not prompt. That switch is not part of the default command. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
 
 ## License
 
