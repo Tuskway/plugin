@@ -43,4 +43,4 @@ Tackle T5 in <workspace>/<epic> (<url>) with tackle-ticket-tuskway.
 
 ## Done
 
-Report the target, the wave keys as returned, the handoff lines or the reason there are none, and that no status was changed. Run it again after a round merges. This report is not implementation.
+Report the target, the wave keys as returned, the handoff lines or the reason there are none, and that no status was changed. Run it again after a round merges. When those tickets are done, sync-design-tuskway is the design check, and only after the user asks for it. This report is not implementation.
