@@ -204,6 +204,9 @@ test("marketplace sources resolve inside plugins/tuskway", () => {
     const entry = marketplace.plugins[0];
     assert.equal(entry.name, "tuskway");
     assert.equal(entry.description, description);
+    if (marketplacePath === ".claude-plugin/marketplace.json") {
+      assert.equal(marketplace.description, description);
+    }
     assert.equal(entry.version, version);
     assert.equal(entry.source, "./plugins/tuskway");
     assertInside(root, entry.source, marketplacePath);

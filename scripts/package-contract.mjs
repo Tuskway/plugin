@@ -111,6 +111,26 @@ const clientCommands = [
   ["Pi", "pi"],
 ];
 
+function recordedStatus(value) {
+  if (typeof value === "string") return value;
+  return value?.status;
+}
+
+export function recordedProblems(data) {
+  const problems = [];
+  if (!Array.isArray(data?.clients) || data.clients.length !== 7) {
+    problems.push("recorded client matrix must name seven clients");
+  }
+  for (const client of data?.clients ?? []) {
+    for (const key of ["oauth", "workflow", "routing"]) {
+      if (recordedStatus(client[key]) === "pass") {
+        problems.push(`${client.client ?? "client"} ${key} cannot pass in this record`);
+      }
+    }
+  }
+  return problems;
+}
+
 export function clientRows(lookup) {
   return clientCommands.map(([name, command]) => {
     const found = lookup(command);

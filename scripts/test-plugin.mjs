@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   clientChecks,
   clientRows,
+  recordedProblems,
   packageContentErrors,
   requiredSkills,
   skillNames,
@@ -201,6 +202,20 @@ test("validate fails a broken skill and accepts a valid ninth skill", () => {
   }
 });
 
+test("a recorded routing or oauth pass is rejected", () => {
+  const sample = {
+    clients: Array.from({ length: 7 }, () => ({
+      client: "Example",
+      oauth: { status: "blocked" },
+      workflow: { status: "NOT RUN" },
+      routing: { status: "NOT RUN" },
+    })),
+  };
+  assert.deepEqual(recordedProblems(sample), []);
+  sample.clients[0].routing = { status: "pass" };
+  assert.equal(recordedProblems(sample).some((error) => error.includes("routing")), true);
+});
+
 test("a binary on PATH does not count as a client result", () => {
   for (const row of clientRows(() => "/usr/bin/claude")) {
     assert.equal(row.binary, "present");
@@ -232,6 +247,13 @@ test("validate reports structural pass and live client checks as not run", () =>
   assert.deepEqual(report.workflow, []);
   assertNotRun(report);
   assert.equal(report.ci.hostedRuns, false);
+  assert.equal(report.recorded.status, "recorded");
+  assert.equal(report.recorded.clients.length, 7);
+  assert.deepEqual(recordedProblems(report.recorded), []);
+  assert.equal(
+    report.recorded.clients.some((client) => client.routing === "pass"),
+    false,
+  );
   assert.deepEqual(report.ci.runner, ["self-hosted", "tuskway"]);
 });
 

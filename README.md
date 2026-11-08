@@ -27,11 +27,11 @@ A public repository is not a directory listing. This package is not submitted to
 
 `.mcp.json` is the Claude form `{ "type": "http", "url": "https://tuskway.com/mcp" }`. Claude Code accepts `streamable-http` as an alias of `http` and treats a `url` without `type` as stdio. Cursor's loader reads `.mcp.json` before `mcp.json` when both exist ([cursor/plugins#252](https://github.com/cursor/plugins/issues/252)). `.cursor-plugin/plugin.json` pins `mcpServers` to `./.mcp.json`. Both files name the server `tuskway` and use the same URL.
 
-Current Codex requires `onboardingSkill` to be a `./` path to a packaged `SKILL.md`. `plugins/tuskway/plugin.json` sets `extensions["com.openai"].onboardingSkill` to `./skills/setup-tuskway/SKILL.md`, and `.codex-plugin/plugin.json` sets the same path. Codex was not run after that field was set.
+Current Codex requires `onboardingSkill` to be a `./` path to a packaged `SKILL.md`. `plugins/tuskway/plugin.json` sets `extensions["com.openai"].onboardingSkill` to `./skills/setup-tuskway/SKILL.md`, and `.codex-plugin/plugin.json` sets the same path. Codex 0.167.0 added this local checkout as a marketplace and installed the plugin. It did not sign in, and it did not start the onboarding skill.
 
 Pi installs this repository from git. `"private": true` does not block that clone. Pi 1.5.0 installed this package from a local git HTTP remote and left `private` set. `pi install git:github.com/tuskway/plugin` was not run against github.com. `libnpmpublish` rejects a private manifest with `EPRIVATE` before it sends the package to the registry. On npm 10.9.9, `npm publish --dry-run` still packs a private manifest and does not upload it. The npm CLI calls the publisher only after its local credential check.
 
-The install lines below are the agreed client commands. They were compared with current client docs and were not run in those clients.
+The install lines below are the agreed client commands. They were compared with current client docs and were not run in those clients. Local-checkout results, including the commands that did run, are in `evals/client-checks.json`.
 
 ## Install
 
@@ -47,7 +47,7 @@ The install lines below are the agreed client commands. They were compared with 
 | OpenCode | `npx skills add tuskway/plugin --agent opencode` and `opencode mcp add tuskway --url https://tuskway.com/mcp` | `opencode mcp auth tuskway` |
 | Pi | `pi install git:github.com/tuskway/plugin` and `pi mcp add tuskway --url https://tuskway.com/mcp` | `pi mcp login tuskway` |
 
-Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. Those clients were not re-run after the skill files landed.
+Update with the client's marketplace update command. Pi and OpenCode update by running their install commands again. The GitHub shorthand commands in the table were not run. `evals/client-checks.json` records the local CLI versions and which checks stopped before sign-in.
 
 ## Check the package
 
@@ -58,7 +58,7 @@ node scripts/validate.mjs
 node --test scripts/test-manifests.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
 ```
 
-`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links, then prints the seven-client install, discovery, resources, MCP, OAuth, update, workflow, and routing matrix. Every one of those cells is `NOT RUN`. A binary on PATH is not a result. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
+`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links, then prints the seven-client install, discovery, resources, MCP, OAuth, update, workflow, and routing matrix. Every one of those live cells is `NOT RUN`. A binary on PATH is not a result. The pinned local CLI record is `recorded` in that output and `evals/client-checks.json`. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
 
 ## License
 

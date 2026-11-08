@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   clientRows,
   optionalSkills,
+  recordedProblems,
   packageContentErrors,
   skillNames,
   versionReport,
@@ -120,9 +121,19 @@ const workflowProblems = existsSync(workflowPath)
   : checkout
     ? ["workflow file is missing"]
     : [];
+const recordedPath = path.join(root, "evals/client-checks.json");
+const recorded = checkout && existsSync(recordedPath)
+  ? JSON.parse(readFileSync(recordedPath, "utf8"))
+  : null;
+const recordedErrors = checkout
+  ? recorded
+    ? recordedProblems(recorded)
+    : ["recorded client checks are missing"]
+  : [];
 const structurePass = contentErrors.length === 0
   && versions.drift.length === 0
   && workflowProblems.length === 0
+  && recordedErrors.length === 0
   && (checkout ? suitePass : true)
   && validator.status !== "fail";
 
@@ -149,6 +160,9 @@ const report = {
   },
   workflow: workflowProblems,
   clients: clientRows(onPath),
+  recorded: recorded
+    ? { status: recordedErrors.length === 0 ? "recorded" : "invalid", errors: recordedErrors, ...recorded }
+    : { status: checkout ? "missing" : "not applied", errors: recordedErrors },
   ci: {
     hostedRuns: false,
     trigger: "workflow_dispatch",
