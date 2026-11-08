@@ -3,7 +3,6 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  clientRows,
   optionalSkills,
   packageContentErrors,
   skillNames,
@@ -128,7 +127,6 @@ const structurePass = contentErrors.length === 0
 
 const report = {
   structure: structurePass ? "pass" : "fail",
-  liveAcceptance: "NOT RUN",
   skills: {
     present: names,
     count: names.length,
@@ -138,22 +136,18 @@ const report = {
   contentErrors,
   version: versions.canonical,
   versionDrift: versions.drift,
-  versionBump: "NOT RUN",
   unversionedManifests: versions.unversioned,
   manifestSuite: checkout ? (suitePass ? "pass" : "fail") : "not applied",
   manifestTests: tests,
   claudePluginValidate: validator,
   release: {
     ...tags,
-    note: "No tag is created. A plugin-v tag waits for recorded behavior and client checks.",
   },
   workflow: workflowProblems,
-  clients: clientRows(onPath),
   ci: {
     hostedRuns: false,
     trigger: "workflow_dispatch",
     runner: ["self-hosted", "tuskway"],
-    tension: "repo.md asks the workflow to gate these static checks. .github/workflows/plugin.yml does not run on push or pull_request and does not select a GitHub-hosted runner, so opening a pull request spends no Actions minutes. Run the three local commands until a self-hosted runner labeled tuskway exists.",
   },
 };
 

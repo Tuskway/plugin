@@ -90,39 +90,6 @@ export function versionReport(root) {
 
 const hostedRunner = /\b(?:ubuntu-latest|ubuntu-\d+\.\d+|macos-latest|macos-\d+|windows-latest|windows-\d+)\b/;
 
-export const clientChecks = [
-  "install",
-  "discovery",
-  "resources",
-  "mcp",
-  "oauth",
-  "update",
-  "workflow",
-  "routing",
-];
-
-const clientCommands = [
-  ["Claude Code", "claude"],
-  ["Cursor", "cursor"],
-  ["Codex", "codex"],
-  ["Copilot CLI", "copilot"],
-  ["Grok Build", "grok"],
-  ["OpenCode", "opencode"],
-  ["Pi", "pi"],
-];
-
-export function clientRows(lookup) {
-  return clientCommands.map(([name, command]) => {
-    const found = lookup(command);
-    const row = { client: name, binary: found ? "present" : "absent" };
-    for (const check of clientChecks) row[check] = "NOT RUN";
-    if (name === "Cursor") {
-      row.note = "Grok Bot uses the Cursor install and was not run separately.";
-    }
-    return row;
-  });
-}
-
 export function workflowErrors(text) {
   const errors = [];
   if (hostedRunner.test(text)) errors.push("workflow selects a GitHub-hosted runner");

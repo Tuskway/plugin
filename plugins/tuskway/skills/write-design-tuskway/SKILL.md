@@ -4,7 +4,6 @@ description: Proposes a repository-grounded Tuskway technical design with behavi
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Write a Tuskway design

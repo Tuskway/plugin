@@ -4,7 +4,6 @@ description: Implements one Tuskway ticket under the developer's own process and
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Tackle one ticket

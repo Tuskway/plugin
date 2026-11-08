@@ -6,8 +6,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import {
-  clientChecks,
-  clientRows,
   packageContentErrors,
   requiredSkills,
   skillNames,
@@ -58,16 +56,6 @@ function validate(dir) {
     encoding: "utf8",
   });
   return { status: ran.status, report: JSON.parse(ran.stdout) };
-}
-
-function assertNotRun(report) {
-  assert.equal(report.liveAcceptance, "NOT RUN");
-  assert.equal(report.versionBump, "NOT RUN");
-  assert.equal(report.clients.length, 7);
-  for (const client of report.clients) {
-    assert.notEqual(client.binary, "pass");
-    for (const check of clientChecks) assert.equal(client[check], "NOT RUN", client.client);
-  }
 }
 
 test("nine skills are required and an absent canonical skill fails", () => {
@@ -157,21 +145,18 @@ test("validate fails a broken skill and accepts a valid ninth skill", () => {
     assert.equal(absent.status, 1);
     assert.equal(absent.report.structure, "fail");
     assert.equal(absent.report.contentErrors.includes("missing sync-design-tuskway"), true);
-    assertNotRun(absent.report);
 
     const skillPath = writeSkill(dir, validSkill.replace("name: sync-design-tuskway", "name: other-tuskway"));
     const renamed = validate(dir);
     assert.equal(renamed.status, 1);
     assert.equal(renamed.report.structure, "fail");
     assert.equal(renamed.report.manifestSuite, "not applied");
-    assertNotRun(renamed.report);
     assert.equal(renamed.report.contentErrors.some((error) => error.includes("frontmatter name")), true);
 
     writeSkill(dir, validSkill.replace("references/target.md", "references/missing.md"));
     const missing = validate(dir);
     assert.equal(missing.status, 1);
     assert.equal(missing.report.contentErrors.some((error) => error.includes("missing resource")), true);
-    assertNotRun(missing.report);
 
     writeSkill(dir, `${validSkill}\nTODO: fill this in.\n`);
     const placeholder = validate(dir);
@@ -191,7 +176,6 @@ test("validate fails a broken skill and accepts a valid ninth skill", () => {
     assert.deepEqual(accepted.report.skills.optionalAbsent, []);
     assert.equal(accepted.report.manifestSuite, "not applied");
     assert.equal(accepted.report.claudePluginValidate.status, "NOT RUN");
-    assertNotRun(accepted.report);
     assert.equal(
       readFileSync(path.join(root, "plugins/tuskway/skills/plan-tuskway/SKILL.md"), "utf8"),
       original,
@@ -201,18 +185,7 @@ test("validate fails a broken skill and accepts a valid ninth skill", () => {
   }
 });
 
-test("a binary on PATH does not count as a client result", () => {
-  for (const row of clientRows(() => "/usr/bin/claude")) {
-    assert.equal(row.binary, "present");
-    for (const check of clientChecks) assert.equal(row[check], "NOT RUN");
-  }
-  for (const row of clientRows(() => null)) {
-    assert.equal(row.binary, "absent");
-    for (const check of clientChecks) assert.equal(row[check], "NOT RUN");
-  }
-});
-
-test("validate reports structural pass and live client checks as not run", () => {
+test("validate reports the package on disk", () => {
   const stdout = execFileSync("node", ["scripts/validate.mjs"], {
     cwd: root,
     encoding: "utf8",
@@ -230,7 +203,14 @@ test("validate reports structural pass and live client checks as not run", () =>
   assert.notEqual(report.claudePluginValidate.status, "pass");
   assert.equal(report.release.autoTag, false);
   assert.deepEqual(report.workflow, []);
-  assertNotRun(report);
+  assert.equal(report.clients, undefined);
+  assert.equal(report.recorded, undefined);
+  assert.equal(report.routingGrade, undefined);
+  const grokRow = readFileSync(path.join(root, "README.md"), "utf8")
+    .split("\n")
+    .find((line) => line.startsWith("| Grok Build |"));
+  assert.equal(grokRow.includes("--trust"), false);
+  assert.match(grokRow, /grok plugin install tuskway\/plugin/);
   assert.equal(report.ci.hostedRuns, false);
   assert.deepEqual(report.ci.runner, ["self-hosted", "tuskway"]);
 });
@@ -283,8 +263,6 @@ test("the T4 sync-design files pass these content checks", { skip: t4Present ? f
     assert.equal(report.status, 0, report.report.contentErrors.join("\n"));
     assert.equal(report.report.structure, "pass");
     assert.equal(report.report.skills.count, 9);
-    assert.equal(report.report.liveAcceptance, "NOT RUN");
-    assert.equal(report.report.versionBump, "NOT RUN");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

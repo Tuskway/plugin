@@ -4,7 +4,6 @@ description: Shows which Tuskway tickets can start together and writes a ready-o
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Plan a round

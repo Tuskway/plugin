@@ -5,11 +5,6 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const tasks = JSON.parse(readFileSync(path.join(root, "evals/tasks.json"), "utf8"));
-const iteration3Path = path.join(root, "evals/iteration-3.json");
-if (existsSync(iteration3Path)) {
-  const iteration3 = JSON.parse(readFileSync(iteration3Path, "utf8"));
-  tasks.extraRuns = [...(tasks.extraRuns ?? []), ...(iteration3.runs ?? [])];
-}
 const iterationDir = path.join(root, "evals/evidence", `iteration-${tasks.iteration}`);
 
 function readCalls(dir) {

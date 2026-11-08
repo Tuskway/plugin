@@ -4,7 +4,6 @@ description: Compares merged work with the Tuskway design and proposes the edits
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Sync the design after a merge

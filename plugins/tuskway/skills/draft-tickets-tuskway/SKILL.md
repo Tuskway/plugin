@@ -4,7 +4,6 @@ description: Turns an approved Tuskway design into self-contained ticket briefs 
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Draft tickets
