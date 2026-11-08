@@ -4,7 +4,7 @@ One plugin folder, `plugins/tuskway`, installed as-is by Claude Code, Cursor, Co
 
 The plugin connects to the hosted MCP server at `https://tuskway.com/mcp`. Sign-in is OAuth in the client. The package contains no access tokens, hooks, rule files, or subagents. The root `package.json` is private so it is not published to npm. There is no per-client build output.
 
-Eight workflow skills are authored under `plugins/tuskway/skills/`. `sync-design-tuskway` is not in this package. Codex onboarding points at `./skills/setup-tuskway/SKILL.md`.
+Nine workflow skills are authored under `plugins/tuskway/skills/`, including `sync-design-tuskway`. Codex onboarding points at `./skills/setup-tuskway/SKILL.md`.
 
 ## Private testing
 
@@ -58,7 +58,7 @@ node scripts/validate.mjs
 node --test scripts/test-manifests.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
 ```
 
-`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links, then prints the seven-client install, discovery, resources, MCP, OAuth, update, workflow, and routing matrix. Every one of those cells is `NOT RUN`. A binary on PATH is not a result. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. `sync-design-tuskway` is accepted when its directory is present and valid; it is not in this branch. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
+`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links, then prints the seven-client install, discovery, resources, MCP, OAuth, update, workflow, and routing matrix. Every one of those cells is `NOT RUN`. A binary on PATH is not a result. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
 
 ## License
 

@@ -70,11 +70,12 @@ function assertNotRun(report) {
   }
 }
 
-test("eight current skills pass and sync-design may be added", () => {
+test("nine skills are required and an absent canonical skill fails", () => {
+  assert.equal(requiredSkills.includes("sync-design-tuskway"), true);
+  assert.equal(requiredSkills.length, 9);
   assert.deepEqual(skillSetErrors(requiredSkills), []);
-  assert.deepEqual(skillSetErrors([...requiredSkills, "sync-design-tuskway"].sort()), []);
-  assert.deepEqual(skillSetErrors(requiredSkills.filter((name) => name !== "plan-tuskway")), [
-    "missing plan-tuskway",
+  assert.deepEqual(skillSetErrors(requiredSkills.filter((name) => name !== "sync-design-tuskway")), [
+    "missing sync-design-tuskway",
   ]);
   assert.deepEqual(skillSetErrors([...requiredSkills, "ship-tuskway"]), [
     "unexpected ship-tuskway",
@@ -151,6 +152,13 @@ test("validate fails a broken skill and accepts a valid ninth skill", () => {
     "utf8",
   );
   try {
+    rmSync(path.join(dir, "plugins/tuskway/skills/sync-design-tuskway"), { recursive: true, force: true });
+    const absent = validate(dir);
+    assert.equal(absent.status, 1);
+    assert.equal(absent.report.structure, "fail");
+    assert.equal(absent.report.contentErrors.includes("missing sync-design-tuskway"), true);
+    assertNotRun(absent.report);
+
     const skillPath = writeSkill(dir, validSkill.replace("name: sync-design-tuskway", "name: other-tuskway"));
     const renamed = validate(dir);
     assert.equal(renamed.status, 1);
@@ -214,8 +222,9 @@ test("validate reports structural pass and live client checks as not run", () =>
   assert.deepEqual(report.contentErrors, []);
   assert.equal(report.manifestSuite, "pass");
   assert.equal(report.manifestTests >= 8, true);
-  assert.equal(report.skills.count, 8);
-  assert.deepEqual(report.skills.optionalAbsent, ["sync-design-tuskway"]);
+  assert.equal(report.skills.count, 9);
+  assert.deepEqual(report.skills.present.includes("sync-design-tuskway"), true);
+  assert.deepEqual(report.skills.optionalAbsent, []);
   assert.equal(report.versionDrift.length, 0);
   assert.equal(report.claudePluginValidate.status, "UNAVAILABLE");
   assert.notEqual(report.claudePluginValidate.status, "pass");

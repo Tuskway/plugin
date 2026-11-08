@@ -7,12 +7,13 @@ export const requiredSkills = [
   "plan-tuskway",
   "setup-tuskway",
   "start-epic-tuskway",
+  "sync-design-tuskway",
   "tackle-ticket-tuskway",
   "tracker-changes-tuskway",
   "write-design-tuskway",
 ];
 
-export const optionalSkills = ["sync-design-tuskway"];
+export const optionalSkills = [];
 
 export const versionFiles = [
   "plugins/tuskway/plugin.json",

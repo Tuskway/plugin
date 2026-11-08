@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   clientRows,
+  optionalSkills,
   packageContentErrors,
   skillNames,
   versionReport,
@@ -131,7 +132,7 @@ const report = {
   skills: {
     present: names,
     count: names.length,
-    optionalAbsent: ["sync-design-tuskway"].filter((name) => !names.includes(name)),
+    optionalAbsent: optionalSkills.filter((name) => !names.includes(name)),
     errors: contentErrors,
   },
   contentErrors,

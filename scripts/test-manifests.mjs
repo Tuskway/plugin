@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { packageContentErrors } from "./package-contract.mjs";
+import { packageContentErrors, requiredSkills, skillNames } from "./package-contract.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pluginRoot = path.join(root, "plugins/tuskway");
@@ -267,6 +267,9 @@ test("names, descriptions, and versions agree", () => {
 
 test("authored skills keep portable frontmatter and local links", () => {
   const skillsDir = path.join(pluginRoot, "skills");
+  assert.deepEqual(skillNames(root), requiredSkills);
+  assert.equal(requiredSkills.includes("sync-design-tuskway"), true);
+  assert.equal(requiredSkills.length, 9);
   assert.deepEqual(packageContentErrors(root), []);
   assert.equal(
     readFileSync(path.join(skillsDir, ".gitkeep"), "utf8"),
