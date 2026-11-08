@@ -1,13 +1,11 @@
 name: plugin
 
-# Static package checks only. This workflow has no push trigger and no
-# pull-request trigger, and it does not select a GitHub-hosted runner. A manual
-# run waits for a self-hosted runner labeled tuskway. Until that runner
-# exists, run these commands locally:
+# Manual package checks. No push or pull_request trigger.
+# A run waits for a self-hosted runner labeled tuskway.
+# Locally:
 #   node --test scripts/test-plugin.mjs
 #   node scripts/sync.mjs --check
 #   node scripts/validate.mjs
-# They do not install a client and they do not prove OAuth or routing.
 
 on:
   workflow_dispatch:
