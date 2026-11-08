@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   clientRows,
   optionalSkills,
+  outcomeRows,
   recordedProblems,
   packageContentErrors,
   skillNames,
@@ -159,7 +160,8 @@ const report = {
     note: "No tag is created. A plugin-v tag waits for recorded behavior and client checks.",
   },
   workflow: workflowProblems,
-  clients: clientRows(onPath),
+  pathProbe: clientRows(onPath),
+  clients: recorded ? outcomeRows(recorded.clients) : clientRows(onPath),
   recorded: recorded
     ? { status: recordedErrors.length === 0 ? "recorded" : "invalid", errors: recordedErrors, ...recorded }
     : { status: checkout ? "missing" : "not applied", errors: recordedErrors },

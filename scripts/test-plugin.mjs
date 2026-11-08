@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   clientChecks,
   clientRows,
+  outcomeRows,
   recordedProblems,
   packageContentErrors,
   requiredSkills,
@@ -67,6 +68,13 @@ function assertNotRun(report) {
   assert.equal(report.clients.length, 7);
   for (const client of report.clients) {
     assert.notEqual(client.binary, "pass");
+    for (const check of clientChecks) assert.equal(client[check], "NOT RUN", client.client);
+  }
+}
+
+function assertPathProbe(report) {
+  assert.equal(report.pathProbe.length, 7);
+  for (const client of report.pathProbe) {
     for (const check of clientChecks) assert.equal(client[check], "NOT RUN", client.client);
   }
 }
@@ -216,6 +224,16 @@ test("a recorded routing or oauth pass is rejected", () => {
   assert.equal(recordedProblems(sample).some((error) => error.includes("routing")), true);
 });
 
+test("recorded install and discovery stay distinct from the path probe", () => {
+  const rows = outcomeRows([
+    { client: "Claude Code", version: "1", install: "pass", discovery: "pass", pluginInstall: "pass" },
+  ]);
+  assert.equal(rows[0].install, "pass");
+  assert.equal(rows[0].discovery, "pass");
+  assert.equal(rows[0].routing, "NOT RUN");
+  assert.equal(Object.hasOwn(rows[0], "pluginInstall"), false);
+});
+
 test("a binary on PATH does not count as a client result", () => {
   for (const row of clientRows(() => "/usr/bin/claude")) {
     assert.equal(row.binary, "present");
@@ -227,7 +245,7 @@ test("a binary on PATH does not count as a client result", () => {
   }
 });
 
-test("validate reports structural pass and live client checks as not run", () => {
+test("validate keeps the path probe separate from recorded outcomes", () => {
   const stdout = execFileSync("node", ["scripts/validate.mjs"], {
     cwd: root,
     encoding: "utf8",
@@ -245,7 +263,16 @@ test("validate reports structural pass and live client checks as not run", () =>
   assert.notEqual(report.claudePluginValidate.status, "pass");
   assert.equal(report.release.autoTag, false);
   assert.deepEqual(report.workflow, []);
-  assertNotRun(report);
+  assert.equal(report.liveAcceptance, "NOT RUN");
+  assert.equal(report.versionBump, "NOT RUN");
+  assertPathProbe(report);
+  const claude = report.clients.find((client) => client.client === "Claude Code");
+  const cursor = report.clients.find((client) => client.client === "Cursor");
+  assert.equal(claude.install, "pass");
+  assert.equal(claude.discovery, "pass");
+  assert.equal(cursor.install, "pass");
+  assert.equal(cursor.oauth, "waiting");
+  assert.equal(report.clients.some((client) => client.routing === "pass" || client.oauth === "pass"), false);
   assert.equal(report.ci.hostedRuns, false);
   assert.equal(report.recorded.status, "recorded");
   assert.equal(report.recorded.clients.length, 7);

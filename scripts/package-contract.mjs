@@ -131,6 +131,17 @@ export function recordedProblems(data) {
   return problems;
 }
 
+export function outcomeRows(clients) {
+  return (clients ?? []).map((client) => {
+    const row = { client: client.client };
+    if (typeof client.version === "string") row.version = client.version;
+    for (const check of clientChecks) {
+      row[check] = typeof client[check] === "string" ? client[check] : "NOT RUN";
+    }
+    return row;
+  });
+}
+
 export function clientRows(lookup) {
   return clientCommands.map(([name, command]) => {
     const found = lookup(command);

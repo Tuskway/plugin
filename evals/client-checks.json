@@ -1,8 +1,8 @@
 {
-  "recordedAt": "2026-11-08T14:08:00Z",
+  "recordedAt": "2026-11-08T14:12:00Z",
   "host": "linux x86_64",
   "base": "db62908225bd7fab89f2160999724715b7e61be5",
-  "note": "Commands ran against this local checkout in isolated homes. GitHub shorthand installs, in-app clicks, OAuth, model workflows, and description routing were not run. A binary on PATH is not a result.",
+  "note": "Commands ran against this local checkout in isolated homes. GitHub shorthand installs and in-app clicks were not run. Cursor agent login is waiting for browser authentication; the one-time challenge is not in this file. No client completed OAuth. Model workflows and description routing were not run. A binary on PATH is not a result.",
   "clients": [
     {
       "client": "Claude Code",
@@ -41,12 +41,13 @@
       "packageDetail": "agent plugin has a marketplace command and no validate command.",
       "pluginInstall": "blocked",
       "pluginCommand": "agent plugin marketplace add <repo>",
-      "pluginDetail": "Authentication required. The next command is agent login. It was not started. Grok Bot was not run.",
+      "pluginDetail": "agent plugin marketplace add stopped before login. agent login is now waiting. Grok Bot was not run.",
       "discovery": "NOT RUN",
       "resources": "NOT RUN",
       "mcp": "NOT RUN",
-      "oauth": "blocked",
+      "oauth": "waiting",
       "oauthCommand": "agent login",
+      "oauthDetail": "agent login is waiting for browser authentication. The official page is https://cursor.com/loginDeepControl and the one-time challenge and uuid are not stored in this file.",
       "update": "NOT RUN",
       "workflow": "NOT RUN",
       "routing": "NOT RUN"
