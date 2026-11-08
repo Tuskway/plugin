@@ -6,7 +6,7 @@ import {
   clientRows,
   optionalSkills,
   outcomeRows,
-  recordedProblems,
+  parseRecorded,
   packageContentErrors,
   skillNames,
   versionReport,
@@ -123,12 +123,13 @@ const workflowProblems = existsSync(workflowPath)
     ? ["workflow file is missing"]
     : [];
 const recordedPath = path.join(root, "evals/client-checks.json");
-const recorded = checkout && existsSync(recordedPath)
-  ? JSON.parse(readFileSync(recordedPath, "utf8"))
+const parsedRecord = checkout && existsSync(recordedPath)
+  ? parseRecorded(readFileSync(recordedPath, "utf8"))
   : null;
+const recorded = parsedRecord?.data ?? null;
 const recordedErrors = checkout
-  ? recorded
-    ? recordedProblems(recorded)
+  ? parsedRecord
+    ? parsedRecord.errors
     : ["recorded client checks are missing"]
   : [];
 const structurePass = contentErrors.length === 0
@@ -161,9 +162,9 @@ const report = {
   },
   workflow: workflowProblems,
   pathProbe: clientRows(onPath),
-  clients: recorded ? outcomeRows(recorded.clients) : clientRows(onPath),
+  clients: recorded && recordedErrors.length === 0 ? outcomeRows(recorded.clients) : clientRows(onPath),
   recorded: recorded
-    ? { status: recordedErrors.length === 0 ? "recorded" : "invalid", errors: recordedErrors, ...recorded }
+    ? { ...recorded, status: recordedErrors.length === 0 ? "recorded" : "invalid", errors: recordedErrors }
     : { status: checkout ? "missing" : "not applied", errors: recordedErrors },
   ci: {
     hostedRuns: false,

@@ -110,6 +110,8 @@
       "packageCommand": "grok plugin validate <plugin>",
       "pluginInstall": "pass",
       "pluginCommand": "grok plugin install <repo> --trust",
+      "trustFlag": "check-only",
+      "pluginDetail": "--trust was added so this unattended check would not prompt. It is not the default command.",
       "discovery": "not shown",
       "discoveryCommand": "grok plugin details tuskway",
       "discoveryDetail": "Reported one skill directory and MCP servers. It did not list skill names.",

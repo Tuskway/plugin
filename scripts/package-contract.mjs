@@ -112,23 +112,47 @@ const clientCommands = [
 ];
 
 function recordedStatus(value) {
-  if (typeof value === "string") return value;
-  return value?.status;
+  if (typeof value === "string") return value.trim();
+  if (typeof value?.status === "string") return value.status.trim();
+  return "";
 }
+
+const clientTargets = clientCommands.map(([name]) => name);
+const noPass = new Set(["oauth", "workflow", "routing", "mcp"]);
 
 export function recordedProblems(data) {
   const problems = [];
-  if (!Array.isArray(data?.clients) || data.clients.length !== 7) {
-    problems.push("recorded client matrix must name seven clients");
+  const names = (data?.clients ?? []).map((client) => client.client);
+  if (names.length !== clientTargets.length || names.some((name, index) => name !== clientTargets[index])) {
+    problems.push("recorded client matrix must name the seven targets in order");
   }
   for (const client of data?.clients ?? []) {
-    for (const key of ["oauth", "workflow", "routing"]) {
+    for (const key of noPass) {
       if (recordedStatus(client[key]) === "pass") {
         problems.push(`${client.client ?? "client"} ${key} cannot pass in this record`);
       }
     }
+    if (recordedStatus(client.discovery) === "pass" && !/skill names/i.test(String(client.discoveryDetail ?? ""))) {
+      problems.push(`${client.client ?? "client"} discovery pass requires listed skill names`);
+    }
+    if (
+      client.client === "Grok Build"
+      && String(client.pluginCommand ?? "").includes("--trust")
+      && client.trustFlag !== "check-only"
+    ) {
+      problems.push("Grok Build --trust must stay off the default command");
+    }
   }
   return problems;
+}
+
+export function parseRecorded(text) {
+  try {
+    const data = JSON.parse(text);
+    return { data, errors: recordedProblems(data) };
+  } catch {
+    return { data: null, errors: ["recorded client checks are not valid json"] };
+  }
 }
 
 export function outcomeRows(clients) {
@@ -136,7 +160,9 @@ export function outcomeRows(clients) {
     const row = { client: client.client };
     if (typeof client.version === "string") row.version = client.version;
     for (const check of clientChecks) {
-      row[check] = typeof client[check] === "string" ? client[check] : "NOT RUN";
+      const source = check === "install" ? client.pluginInstall : client[check];
+      const status = recordedStatus(source);
+      row[check] = !status || (noPass.has(check) && status === "pass") ? "NOT RUN" : status;
     }
     return row;
   });
@@ -144,7 +170,7 @@ export function outcomeRows(clients) {
 
 export function clientRows(lookup) {
   return clientCommands.map(([name, command]) => {
-    const found = lookup(command);
+    const found = lookup(name === "Cursor" ? "agent" : command);
     const row = { client: name, binary: found ? "present" : "absent" };
     for (const check of clientChecks) row[check] = "NOT RUN";
     if (name === "Cursor") {

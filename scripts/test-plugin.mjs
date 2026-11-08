@@ -9,6 +9,7 @@ import {
   clientChecks,
   clientRows,
   outcomeRows,
+  parseRecorded,
   recordedProblems,
   packageContentErrors,
   requiredSkills,
@@ -211,27 +212,43 @@ test("validate fails a broken skill and accepts a valid ninth skill", () => {
 });
 
 test("a recorded routing or oauth pass is rejected", () => {
+  const names = ["Claude Code", "Cursor", "Codex", "Copilot CLI", "Grok Build", "OpenCode", "Pi"];
   const sample = {
-    clients: Array.from({ length: 7 }, () => ({
-      client: "Example",
+    clients: names.map((client) => ({
+      client,
       oauth: { status: "blocked" },
       workflow: { status: "NOT RUN" },
       routing: { status: "NOT RUN" },
+      mcp: "NOT RUN",
     })),
   };
   assert.deepEqual(recordedProblems(sample), []);
   sample.clients[0].routing = { status: "pass" };
   assert.equal(recordedProblems(sample).some((error) => error.includes("routing")), true);
+  sample.clients[0].routing = "NOT RUN";
+  sample.clients[0].discovery = "pass";
+  sample.clients[0].discoveryDetail = "The plugin was enabled.";
+  assert.equal(recordedProblems(sample).some((error) => error.includes("skill names")), true);
+  sample.clients[4].pluginCommand = "grok plugin install <repo> --trust";
+  assert.equal(recordedProblems(sample).some((error) => error.includes("default command")), true);
+  assert.deepEqual(parseRecorded("{"), {
+    data: null,
+    errors: ["recorded client checks are not valid json"],
+  });
 });
 
 test("recorded install and discovery stay distinct from the path probe", () => {
   const rows = outcomeRows([
     { client: "Claude Code", version: "1", install: "pass", discovery: "pass", pluginInstall: "pass" },
+    { client: "Cursor", install: "pass", pluginInstall: "blocked", oauth: "waiting", routing: "pass" },
   ]);
   assert.equal(rows[0].install, "pass");
   assert.equal(rows[0].discovery, "pass");
   assert.equal(rows[0].routing, "NOT RUN");
   assert.equal(Object.hasOwn(rows[0], "pluginInstall"), false);
+  assert.equal(rows[1].install, "blocked");
+  assert.equal(rows[1].oauth, "waiting");
+  assert.equal(rows[1].routing, "NOT RUN");
 });
 
 test("a binary on PATH does not count as a client result", () => {
@@ -266,13 +283,28 @@ test("validate keeps the path probe separate from recorded outcomes", () => {
   assert.equal(report.liveAcceptance, "NOT RUN");
   assert.equal(report.versionBump, "NOT RUN");
   assertPathProbe(report);
-  const claude = report.clients.find((client) => client.client === "Claude Code");
-  const cursor = report.clients.find((client) => client.client === "Cursor");
-  assert.equal(claude.install, "pass");
-  assert.equal(claude.discovery, "pass");
-  assert.equal(cursor.install, "pass");
-  assert.equal(cursor.oauth, "waiting");
-  assert.equal(report.clients.some((client) => client.routing === "pass" || client.oauth === "pass"), false);
+  const byClient = Object.fromEntries(report.clients.map((client) => [client.client, client]));
+  assert.equal(byClient["Claude Code"].install, "pass");
+  assert.equal(byClient["Claude Code"].discovery, "pass");
+  assert.equal(byClient["Claude Code"].mcp, "manifest only");
+  assert.equal(byClient["Claude Code"].oauth, "blocked");
+  assert.equal(byClient["Claude Code"].routing, "NOT RUN");
+  assert.equal(byClient["Claude Code"].workflow, "NOT RUN");
+  assert.equal(byClient.Cursor.install, "blocked");
+  assert.equal(byClient.Cursor.oauth, "waiting");
+  assert.equal(byClient.Codex.discovery, "not shown");
+  assert.equal(byClient["Copilot CLI"].discovery, "pass");
+  assert.equal(byClient["Grok Build"].discovery, "not shown");
+  assert.equal(byClient.OpenCode.install, "fail");
+  assert.equal(byClient.Pi.discovery, "not shown");
+  assert.equal(report.clients.some((client) => client.routing === "pass" || client.oauth === "pass" || client.workflow === "pass" || client.mcp === "pass"), false);
+  const raw = readFileSync(path.join(root, "evals/client-checks.json"), "utf8");
+  assert.equal(/\/home\/|\/Users\/|sk-|ghp_|BEGIN |AWS_|process\.env|api[_-]?key|challenge=|uuid=/i.test(raw), false);
+  const grokRow = readFileSync(path.join(root, "README.md"), "utf8")
+    .split("\n")
+    .find((line) => line.startsWith("| Grok Build |"));
+  assert.equal(grokRow.includes("--trust"), false);
+  assert.match(grokRow, /grok plugin install tuskway\/plugin/);
   assert.equal(report.ci.hostedRuns, false);
   assert.equal(report.recorded.status, "recorded");
   assert.equal(report.recorded.clients.length, 7);
