@@ -421,22 +421,16 @@ test("package excludes hooks, rules, subagents, and per-tool dist", () => {
   );
 });
 
-test("README distinguishes private testing from the later public install", () => {
+test("README documents install and the MCP constraints", () => {
   const readme = readFileSync(path.join(root, "README.md"), "utf8");
-  assert.match(readme, /^## Private testing$/m);
-  assert.match(readme, /^## Later public install$/m);
-  assert.match(readme, /git access/);
-  assert.match(readme, /not a directory listing/);
-  assert.match(readme, /not published to npm/);
   assert.match(readme, /https:\/\/tuskway\.com\/mcp/);
   assert.match(readme, /streamable-http/);
   assert.match(readme, /rejects any other field/);
   assert.match(readme, /onboardingSkill/);
-  assert.match(readme, /were not run in those clients/);
-  assert.match(readme, /EPRIVATE/);
-  assert.match(readme, /Pi 1\.5\.0/);
-  assert.match(readme, /returned 401/);
-  assert.match(readme, /registration_endpoint/);
+  assert.match(readme, /npm publish/);
+  assert.equal(readme.includes("## Private testing"), false);
+  assert.equal(readme.includes("## Later public install"), false);
+  assert.equal(/were not run|client-checks|liveAcceptance|This repository is public/i.test(readme), false);
 });
 
 test("portable manifests match Agent Plugins 1.0.0", async () => {
