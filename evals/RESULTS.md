@@ -16,6 +16,6 @@ Two tools-only runs failed for real. `change-safety` tools-only applied a contra
 
 ## Not shown
 
-Host description routing is not shown. One cloud agent searched the repository, found every `SKILL.md`, and read the canonical skill file. It then read `evals/routing.json`. That is file search, not a host selecting a skill from its description.
+Host description routing is not shown. One cloud agent searched the repository, found every `SKILL.md`, and read the canonical skill file. It then read `evals/routing.json`. That is file search, not a host selecting a skill from its description. Six later Cursor CLI sessions, after a user-scope install, also opened `SKILL.md` from the plugin cache. The system event did not list a skill before the first tool. Those sessions are in `evals/client-checks.json`. They are not host description routing.
 
 These runs do not show client install, OAuth sign-in, live tracker calls, or a release tag. Host description routing is not shown. Local CLI checks are a separate record in `evals/client-checks.json`. They are not these mock grades, and they do not show OAuth, a model workflow, or host description routing. `sync-design-tuskway` does not write a design edit unless that exact edit was shown and the user approved it; `evals/drift.test.mjs` locks that gate. That test is not a client install and not a host routing result. This record is not approval to merge.
