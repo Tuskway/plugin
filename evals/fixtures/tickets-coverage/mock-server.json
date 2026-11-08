@@ -1,0 +1,51 @@
+{
+  "policy": {
+    "allow": [
+      "epic_list",
+      "epic_get",
+      "notes_read",
+      "notes_list",
+      "notes_search",
+      "design_get",
+      "ticket_list",
+      "ticket_get",
+      "ticket_draft"
+    ]
+  },
+  "workspaces": [{ "slug": "fixture", "name": "Fixture", "role": "owner" }],
+  "epics": [
+    {
+      "workspace": "fixture",
+      "slug": "receipts",
+      "title": "Printed receipts",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": "fixture/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": { "current": "design", "nextStep": "Draft tickets" },
+      "url": "https://tuskway.example/w/fixture/epics/receipts"
+    }
+  ],
+  "noteFiles": {
+    "fixture/receipts": {
+      "notes.md": "notes/notes.md",
+      "tech-design/INDEX.md": "notes/tech-design/INDEX.md",
+      "tech-design/return-line.md": "notes/tech-design/return-line.md",
+      "tech-design/barcode.md": "notes/tech-design/barcode.md",
+      "tech-design/total-label.md": "notes/tech-design/total-label.md"
+    }
+  },
+  "tickets": {},
+  "comments": [],
+  "trackerChanges": []
+}

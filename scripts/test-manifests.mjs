@@ -87,14 +87,6 @@ function assertRelativePaths(value, base, label) {
   }
 }
 
-function assertNoOnboarding(manifest, label) {
-  assert.equal(Object.hasOwn(manifest, "onboardingSkill"), false, label);
-  const openai = manifest.extensions?.["com.openai"];
-  if (openai) {
-    assert.equal(Object.hasOwn(openai, "onboardingSkill"), false, label);
-  }
-}
-
 function assertHostedServer(server, label) {
   const url = new URL(server.url);
   assert.equal(url.href, mcpUrl, label);
@@ -265,13 +257,94 @@ test("names, descriptions, and versions agree", () => {
     portable.extensions["com.openai"].interface.shortDescription,
     description,
   );
-  assertNoOnboarding(portable, "plugin.json");
-  assertNoOnboarding(codex, ".codex-plugin/plugin.json");
   assert.equal(
-    repoFiles().some((file) => path.basename(file) === "SKILL.md"),
-    false,
+    portable.extensions["com.openai"].onboardingSkill,
+    "./skills/setup-tuskway/SKILL.md",
   );
+  assert.equal(codex.onboardingSkill, "./skills/setup-tuskway/SKILL.md");
 });
+
+test("authored skills keep portable frontmatter and local links", () => {
+  const skillsDir = path.join(pluginRoot, "skills");
+  const expected = [
+    "comments-tuskway",
+    "draft-tickets-tuskway",
+    "plan-tuskway",
+    "setup-tuskway",
+    "start-epic-tuskway",
+    "tackle-ticket-tuskway",
+    "tracker-changes-tuskway",
+    "write-design-tuskway",
+  ];
+  const found = readdirSync(skillsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  assert.deepEqual(found, expected);
+  assert.equal(
+    readFileSync(path.join(skillsDir, ".gitkeep"), "utf8"),
+    "",
+  );
+
+  for (const name of found) {
+    const skillDir = path.join(skillsDir, name);
+    const skillPath = path.join(skillDir, "SKILL.md");
+    const text = readFileSync(skillPath, "utf8");
+    assert.equal(text.includes("\r"), false, name);
+    assert.equal(Buffer.byteLength(text) < 8000, true, `${name} is ${Buffer.byteLength(text)} bytes`);
+    assert.equal(text.includes("${"), false, name);
+    assert.equal(/generated-from|body-sha256/i.test(text), false, name);
+    const frontmatter = parseSkillFrontmatter(text, name);
+    assert.equal(frontmatter.name, name);
+    assert.equal(name.endsWith("-tuskway"), true);
+    assert.equal(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name), true, name);
+    assert.equal(frontmatter.description.length > 0, true, name);
+    assert.equal(frontmatter.description.length <= 1024, true, name);
+    assert.match(frontmatter.description, /Use when/);
+    assert.match(frontmatter.description, /not for/i);
+    for (const link of markdownLinks(text)) {
+      if (/^[a-z]+:/.test(link)) continue;
+      assertInside(skillDir, link.split("#")[0], `${name} ${link}`);
+    }
+  }
+});
+
+function unquote(value) {
+  if (value.startsWith('"') && value.endsWith('"')) return value.slice(1, -1);
+  return value;
+}
+
+function parseSkillFrontmatter(text, name) {
+  assert.equal(text.startsWith("---\n"), true, name);
+  const end = text.indexOf("\n---\n", 4);
+  assert.equal(end > 4, true, name);
+  const data = {};
+  const lines = text.slice(4, end).split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line || line.startsWith(" ")) continue;
+    const match = /^([A-Za-z0-9-]+):\s*(.*)$/.exec(line);
+    assert.notEqual(match, null, `${name} ${line}`);
+    if (match[2] === "") {
+      const nested = {};
+      while (lines[i + 1]?.startsWith("  ")) {
+        i += 1;
+        const child = /^  ([A-Za-z0-9-]+):\s*(.*)$/.exec(lines[i]);
+        assert.notEqual(child, null, `${name} ${lines[i]}`);
+        nested[child[1]] = unquote(child[2]);
+      }
+      data[match[1]] = nested;
+    } else {
+      data[match[1]] = unquote(match[2]);
+    }
+  }
+  assert.equal(typeof data.description, "string", name);
+  return data;
+}
+
+function markdownLinks(text) {
+  return [...text.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
+}
 
 test("MCP configs point at the hosted server and carry no secrets", () => {
   const claude = readJson("plugins/tuskway/.mcp.json");

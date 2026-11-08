@@ -1,0 +1,75 @@
+{
+  "policy": {
+    "allow": [
+      "epic_list",
+      "epic_get",
+      "notes_read"
+    ]
+  },
+  "workspaces": [
+    {
+      "slug": "fixture",
+      "name": "Fixture",
+      "role": "owner"
+    },
+    {
+      "slug": "plugin-mirror",
+      "name": "Plugin mirror",
+      "role": "owner"
+    }
+  ],
+  "epics": [
+    {
+      "workspace": "fixture",
+      "slug": "receipts",
+      "title": "Printed receipts",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": "fixture/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Plan the ready tickets"
+      },
+      "url": "https://tuskway.example/w/fixture/epics/receipts"
+    },
+    {
+      "workspace": "plugin-mirror",
+      "slug": "plugin",
+      "title": "Plugin work",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": "Tuskway/plugin",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": {
+        "current": "delivery",
+        "nextStep": "Plan the ready tickets"
+      },
+      "url": "https://tuskway.example/w/plugin-mirror/epics/plugin"
+    }
+  ],
+  "noteFiles": {},
+  "tickets": {},
+  "comments": [],
+  "trackerChanges": []
+}

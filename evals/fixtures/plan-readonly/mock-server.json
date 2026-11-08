@@ -1,0 +1,79 @@
+{
+  "policy": {
+    "allow": ["epic_list", "epic_get", "ticket_plan", "ticket_list", "notes_read"]
+  },
+  "workspaces": [{ "slug": "fixture", "name": "Fixture", "role": "owner" }],
+  "epics": [
+    {
+      "workspace": "fixture",
+      "slug": "receipts",
+      "title": "Printed receipts",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": "fixture/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true,
+        "canShare": false
+      },
+      "phase": { "current": "delivery", "nextStep": "Plan the ready tickets" },
+      "url": "https://tuskway.example/w/fixture/epics/receipts"
+    }
+  ],
+  "noteFiles": {},
+  "tickets": {},
+  "comments": [],
+  "trackerChanges": [],
+  "planOverride": {
+    "ready": [
+      {
+        "key": "T2",
+        "title": "Add the return line",
+        "url": "https://tuskway.example/w/fixture/epics/receipts/files?path=tickets%2FT2.md"
+      },
+      {
+        "key": "T4",
+        "title": "Add the loyalty barcode",
+        "url": "https://tuskway.example/w/fixture/epics/receipts/files?path=tickets%2FT4.md"
+      }
+    ],
+    "active": [
+      {
+        "key": "T1",
+        "title": "Scaffold the receipt",
+        "areas": ["src/receipt.mjs"],
+        "url": "https://tuskway.example/w/fixture/epics/receipts/files?path=tickets%2FT1.md"
+      }
+    ],
+    "waiting": [
+      {
+        "key": "T5",
+        "title": "Rename the total label",
+        "waitingOn": ["T2"],
+        "url": "https://tuskway.example/w/fixture/epics/receipts/files?path=tickets%2FT5.md"
+      }
+    ],
+    "waves": [
+      { "number": 1, "keys": ["T1", "T2"] },
+      { "number": 2, "keys": ["T4", "T5"] }
+    ],
+    "held": [
+      {
+        "key": "T4",
+        "heldBy": "T1",
+        "area": "src/receipt.mjs",
+        "url": "https://tuskway.example/w/fixture/epics/receipts/files?path=tickets%2FT4.md"
+      }
+    ],
+    "warnings": [],
+    "suggestedSharedPaths": ["src/receipt.mjs"],
+    "cycles": [],
+    "summary": "1 ready and unheld (T2), T4 held by T1, T5 waiting on T2, T1 active"
+  }
+}

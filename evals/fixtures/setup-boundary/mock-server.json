@@ -1,0 +1,12 @@
+{
+  "policy": {
+    "allow": ["epic_list"],
+    "epicListError": "Tuskway is in private beta. Ask for an invite."
+  },
+  "workspaces": [],
+  "epics": [],
+  "noteFiles": {},
+  "tickets": {},
+  "comments": [],
+  "trackerChanges": []
+}

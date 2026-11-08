@@ -1,0 +1,71 @@
+{
+  "policy": {
+    "allow": [
+      "epic_list",
+      "epic_get",
+      "notes_read",
+      "notes_list",
+      "notes_search",
+      "design_get",
+      "ticket_list",
+      "ticket_get",
+      "ticket_plan",
+      "ticket_update",
+      "note_comment"
+    ],
+    "ticketUpdateStatuses": ["in_progress"]
+  },
+  "workspaces": [{ "slug": "fixture", "name": "Fixture", "role": "owner" }],
+  "epics": [
+    {
+      "workspace": "fixture",
+      "slug": "receipts",
+      "title": "Printed receipts",
+      "status": "draft",
+      "trackerProvider": null,
+      "trackerExternalId": null,
+      "trackerRepo": "fixture/receipts",
+      "trackerGroup": null,
+      "permissions": {
+        "canRead": true,
+        "canEdit": true,
+        "canShare": true,
+        "canSuggest": true,
+        "canManageInbox": true,
+        "isLead": true,
+        "canArchive": true
+      },
+      "phase": { "current": "delivery", "nextStep": "Tackle T2" },
+      "url": "https://tuskway.example/w/fixture/epics/receipts"
+    }
+  ],
+  "noteFiles": {
+    "fixture/receipts": {
+      "notes.md": "notes/notes.md",
+      "tech-design/INDEX.md": "notes/tech-design/INDEX.md",
+      "tech-design/return-line.md": "notes/tech-design/return-line.md"
+    }
+  },
+  "tickets": {
+    "fixture/receipts": [
+      {
+        "key": "T2",
+        "title": "Add the return line to the receipt",
+        "status": "todo",
+        "goal": "Printed receipts include the return window.",
+        "scope": "Append the return line in src/receipt.mjs and cover it with a test. Do not add a module.",
+        "acceptance": "1. renderReceipt includes the exact line \"Returns within 14 days with receipt.\"\n2. The existing test \"includes the total\" still passes.\n3. A new test covers the return line.",
+        "files": "src/receipt.mjs, src/receipt.test.mjs",
+        "ready": true,
+        "waitingOn": [],
+        "heldBy": null,
+        "dependsOn": [],
+        "areas": ["src/receipt.mjs", "src/receipt.test.mjs"],
+        "sectionPath": "tech-design/return-line.md",
+        "sectionTitle": "Return line"
+      }
+    ]
+  },
+  "comments": [],
+  "trackerChanges": []
+}
