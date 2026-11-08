@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   clientChecks,
   clientRows,
+  gradeRouting,
   outcomeRows,
   parseRecorded,
   recordedProblems,
@@ -249,6 +250,21 @@ test("recorded install and discovery stay distinct from the path probe", () => {
   assert.equal(rows[1].install, "blocked");
   assert.equal(rows[1].oauth, "waiting");
   assert.equal(rows[1].routing, "NOT RUN");
+  const later = gradeRouting({
+    status: "fail",
+    cases: [
+      { id: "positive", expectSkill: "write-design-tuskway", readSkill: "write-design-tuskway", when: "after other tools" },
+      { id: "weekend", expectSkill: null, readSkill: "plan-tuskway", when: "first tool" },
+    ],
+  });
+  assert.deepEqual(later.hits, ["positive"]);
+  assert.deepEqual(later.falsePositives, ["weekend"]);
+  assert.equal(later.status, "fail");
+  const hidden = gradeRouting({
+    status: "HOST ROUTER NOT RUN",
+    cases: [{ id: "weekend", expectSkill: null, readSkill: "plan-tuskway" }],
+  });
+  assert.equal(hidden.errors.some((error) => error.includes("not run")), true);
 });
 
 test("a binary on PATH does not count as a client result", () => {
@@ -291,10 +307,16 @@ test("validate keeps the path probe separate from recorded outcomes", () => {
   assert.equal(byClient["Claude Code"].routing, "NOT RUN");
   assert.equal(byClient["Claude Code"].workflow, "NOT RUN");
   assert.equal(byClient.Cursor.install, "pass");
-  assert.equal(byClient.Cursor.oauth, "logged in");
+  assert.equal(byClient.Cursor.oauth, "cli only");
   assert.equal(byClient.Cursor.discovery, "counted");
-  assert.equal(byClient.Cursor.routing, "file read");
+  assert.equal(byClient.Cursor.routing, "fail");
   assert.equal(byClient.Cursor.mcp, "needsAuth");
+  assert.equal(report.routingGrade.status, "fail");
+  assert.deepEqual(report.routingGrade.falsePositives, ["tackle-near-miss", "plan-near-miss"]);
+  assert.deepEqual(report.routingGrade.hits, ["design-positive", "design-paraphrase", "tackle-positive"]);
+  assert.deepEqual(report.routingGrade.abstentions, ["design-near-miss"]);
+  assert.equal(report.routingGrade.liveAcceptance, "NOT RUN");
+  assert.equal(report.liveAcceptance, "NOT RUN");
   assert.equal(byClient.Codex.discovery, "not shown");
   assert.equal(byClient["Copilot CLI"].discovery, "pass");
   assert.equal(byClient["Grok Build"].discovery, "not shown");

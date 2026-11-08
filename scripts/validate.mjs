@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   clientRows,
   optionalSkills,
+  gradeRouting,
   outcomeRows,
   parseRecorded,
   packageContentErrors,
@@ -132,16 +133,34 @@ const recordedErrors = checkout
     ? parsedRecord.errors
     : ["recorded client checks are missing"]
   : [];
+const routingPath = path.join(root, "evals/routing.json");
+let routingGrade = null;
+const routingErrors = [];
+if (checkout) {
+  if (!existsSync(routingPath)) routingErrors.push("routing record is missing");
+  else {
+    try {
+      routingGrade = gradeRouting(JSON.parse(readFileSync(routingPath, "utf8")));
+      routingErrors.push(...routingGrade.errors);
+    } catch {
+      routingErrors.push("routing record is not valid json");
+    }
+  }
+}
 const structurePass = contentErrors.length === 0
   && versions.drift.length === 0
   && workflowProblems.length === 0
   && recordedErrors.length === 0
+  && routingErrors.length === 0
   && (checkout ? suitePass : true)
   && validator.status !== "fail";
 
 const report = {
   structure: structurePass ? "pass" : "fail",
   liveAcceptance: "NOT RUN",
+  routingGrade: routingGrade
+    ? { ...routingGrade, liveAcceptance: "NOT RUN" }
+    : { status: checkout ? "missing" : "not applied", errors: routingErrors, liveAcceptance: "NOT RUN" },
   skills: {
     present: names,
     count: names.length,

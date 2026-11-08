@@ -2,7 +2,7 @@
   "recordedAt": "2026-11-08T15:32:00Z",
   "host": "linux x86_64",
   "base": "db62908225bd7fab89f2160999724715b7e61be5",
-  "note": "Commands ran in isolated homes. GitHub shorthand installs and in-app clicks were not run. Tuskway/plugin is public: anonymous git ls-remote of https://github.com/Tuskway/plugin.git returned db62908225bd7fab89f2160999724715b7e61be5. Cursor CLI login completed, and the plugin was installed for that user from that ref. The details screen counted nine skills and named six before an ellipsis. Six fresh sessions then read skill files. That is not automatic routing. Tuskway MCP still needs sign-in. A model workflow was not run. A binary on PATH is not a result.",
+  "note": "Commands ran in isolated homes. GitHub shorthand installs and in-app clicks were not run. Tuskway/plugin is public: anonymous git ls-remote of https://github.com/Tuskway/plugin.git returned db62908225bd7fab89f2160999724715b7e61be5. Cursor CLI login completed, and the plugin was installed for that user from that ref. The details screen counted nine skills and named six before an ellipsis. Six fresh sessions then read skill files. Two of those reads were unwanted, so routing is fail. Tuskway MCP still needs sign-in. A model workflow was not run. A binary on PATH is not a result.",
   "clients": [
     {
       "client": "Claude Code",
@@ -48,14 +48,14 @@
       "resources": "NOT RUN",
       "mcp": "needsAuth",
       "mcpDetail": "After install, getMcpTools for plugin-tuskway-tuskway returned needsAuth and no tools. agent mcp list does not see plugin servers. agent mcp login tuskway, using the public server URL in the isolated CLI config, is waiting on a browser callback that is local to this environment. No Tuskway tool was called.",
-      "oauth": "logged in",
+      "oauth": "cli only",
       "oauthCommand": "agent status",
       "oauthDetail": "agent login completed and agent status reports logged in. That is CLI login, not Tuskway MCP sign-in. The one-time browser challenge was removed and is not stored here.",
       "update": "NOT RUN",
       "workflow": "NOT RUN",
       "workflowDetail": "No read-only Tuskway tool ran. MCP sign-in is still waiting.",
-      "routing": "file read",
-      "routingDetail": "Six fresh ask mode sessions in empty workspaces, with no plugin directory flag. The system event had no skill list. design-positive and design-paraphrase read write-design-tuskway/SKILL.md as the first tool. tackle-positive read tackle-ticket-tuskway/SKILL.md first. design-near-miss read no Tuskway skill. tackle-near-miss read tackle-ticket-tuskway/SKILL.md after other tools. plan-near-miss read plan-tuskway/SKILL.md first. None showed a skill before a tool call."
+      "routing": "fail",
+      "routingDetail": "Six fresh ask mode sessions in empty workspaces, with no plugin directory flag. design-positive, design-paraphrase, and tackle-positive read the expected skill. design-near-miss read none. tackle-near-miss read tackle-ticket-tuskway after other tools, and plan-near-miss read plan-tuskway first. A later read still counts. The two unwanted reads are false positives, so this is not a pass. Raw transcripts are not in this tree."
     },
     {
       "client": "Codex",

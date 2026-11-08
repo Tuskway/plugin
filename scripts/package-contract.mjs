@@ -146,6 +146,41 @@ export function recordedProblems(data) {
   return problems;
 }
 
+export function gradeRouting(document) {
+  const cases = Array.isArray(document?.cases) ? document.cases : [];
+  const hits = [];
+  const misses = [];
+  const falsePositives = [];
+  const abstentions = [];
+  if (cases.length === 0) {
+    return {
+      status: "not run",
+      hits,
+      misses,
+      falsePositives,
+      abstentions,
+      errors: ["routing record has no cases"],
+    };
+  }
+  for (const item of cases) {
+    const expected = item.expectSkill ?? null;
+    const read = item.readSkill ?? null;
+    if (expected && read === expected) hits.push(item.id);
+    else if (expected) misses.push(item.id);
+    else if (read) falsePositives.push(item.id);
+    else abstentions.push(item.id);
+  }
+  const status = misses.length > 0 || falsePositives.length > 0 ? "fail" : "pass";
+  const errors = [];
+  const claimed = String(document?.status ?? "");
+  if (claimed === "pass" && status !== "pass") errors.push("routing record claims pass");
+  if (/not run/i.test(claimed) && (hits.length > 0 || falsePositives.length > 0 || misses.length > 0)) {
+    errors.push("routing record says not run after a skill file was read");
+  }
+  if (claimed !== status) errors.push(`routing record status ${claimed} does not match ${status}`);
+  return { status, hits, misses, falsePositives, abstentions, errors };
+}
+
 export function parseRecorded(text) {
   try {
     const data = JSON.parse(text);

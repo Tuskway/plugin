@@ -6,7 +6,7 @@ The outcomes and the limits of the saved runs are in `evals/RESULTS.md`. The mod
 
 The old generated snapshot at `7933ea3` is unavailable. GitHub returned 404 for that file. It was not recreated.
 
-`evals/routing.json` lists routing prompts. Its status is `HOST ROUTER NOT RUN`. A model that searches the repository and opens a `SKILL.md` file is not a routing result. Loading a skill by path is explicit execution. The description-match proxy is not a client router.
+`evals/routing.json` grades six Cursor ask-mode sessions. Cursor presents installed skills and the agent loads `SKILL.md` with its read tools; that load does not have to come before every other tool. The current grade is fail because two prompts that should not open a Tuskway skill did. The description-match proxy in `iteration-3.json` is a separate label, not this grade.
 
 A question mark in a report is not evidence that the agent asked a useful question. Calling `ticket_get` for an ambiguous key is not a failure by itself. The failure is choosing that ticket and continuing.
 

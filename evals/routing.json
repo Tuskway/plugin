@@ -1,36 +1,51 @@
 {
-  "status": "HOST ROUTER NOT RUN",
-  "reason": "Six fresh Cursor ask mode sessions ran after the plugin was installed for the signed-in user. The system event listed no skill. The model opened a SKILL.md from the plugin cache. That is a file read, not a host selecting a skill before any tool call. Explicit skill loads are not routing results. The description-match proxy is not a client router.",
+  "status": "fail",
+  "mechanism": "Cursor discovers installed skills and presents them to the agent. The agent decides relevance from the description and loads SKILL.md with its read tools. That load does not have to be the first tool call. Setting disable-model-invocation true is what limits a skill to an explicit slash command. These skills do not set that flag. A system event with no selected skill is compatible with that path.",
+  "transcripts": "not in this tree",
+  "harness": "The recorded prompts contain the words design, tackle, plan, and Tuskway. They do not contain a skill filename or expectSkill. Raw session logs are not in this repository, so a wrapper that added the case id cannot be checked here. That gap does not turn an unwanted read into a pass.",
+  "reason": "Three expected prompts read the expected skill. design-near-miss read none. tackle-near-miss read tackle-ticket-tuskway after other tools, and plan-near-miss read plan-tuskway first. Those two reads are false positives.",
   "cases": [
     {
       "id": "design-positive",
       "prompt": "Design the return-window change on the Tuskway receipts epic.",
-      "expectSkill": "write-design-tuskway"
+      "expectSkill": "write-design-tuskway",
+      "readSkill": "write-design-tuskway",
+      "when": "first tool"
     },
     {
       "id": "design-paraphrase",
       "prompt": "Can you turn the receipts notes into a technical design before anyone writes code?",
-      "expectSkill": "write-design-tuskway"
+      "expectSkill": "write-design-tuskway",
+      "readSkill": "write-design-tuskway",
+      "when": "first tool"
     },
     {
       "id": "design-near-miss",
       "prompt": "Design a caching layer for our Express app in src/cache.ts. This is not a Tuskway epic.",
-      "expectSkill": null
+      "expectSkill": null,
+      "readSkill": null,
+      "when": "no Tuskway skill"
     },
     {
       "id": "tackle-positive",
       "prompt": "Tackle T2 on the Tuskway receipts epic.",
-      "expectSkill": "tackle-ticket-tuskway"
+      "expectSkill": "tackle-ticket-tuskway",
+      "readSkill": "tackle-ticket-tuskway",
+      "when": "first tool"
     },
     {
       "id": "tackle-near-miss",
       "prompt": "The receipt total test failed locally. Fix the test. There is no Tuskway ticket.",
-      "expectSkill": null
+      "expectSkill": null,
+      "readSkill": "tackle-ticket-tuskway",
+      "when": "after other tools"
     },
     {
       "id": "plan-near-miss",
       "prompt": "Help me plan the weekend. Do not open a Tuskway epic.",
-      "expectSkill": null
+      "expectSkill": null,
+      "readSkill": "plan-tuskway",
+      "when": "first tool"
     }
   ]
 }
