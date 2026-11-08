@@ -14,6 +14,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { skillSetErrors } from "./package-contract.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pluginRoot = path.join(root, "plugins/tuskway");
@@ -266,21 +267,11 @@ test("names, descriptions, and versions agree", () => {
 
 test("authored skills keep portable frontmatter and local links", () => {
   const skillsDir = path.join(pluginRoot, "skills");
-  const expected = [
-    "comments-tuskway",
-    "draft-tickets-tuskway",
-    "plan-tuskway",
-    "setup-tuskway",
-    "start-epic-tuskway",
-    "tackle-ticket-tuskway",
-    "tracker-changes-tuskway",
-    "write-design-tuskway",
-  ];
   const found = readdirSync(skillsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
-  assert.deepEqual(found, expected);
+  assert.deepEqual(skillSetErrors(found), []);
   assert.equal(
     readFileSync(path.join(skillsDir, ".gitkeep"), "utf8"),
     "",
