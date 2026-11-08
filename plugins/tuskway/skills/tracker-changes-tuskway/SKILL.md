@@ -4,7 +4,6 @@ description: Accounts for pending tracker edits against the current Tuskway note
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Process tracker changes

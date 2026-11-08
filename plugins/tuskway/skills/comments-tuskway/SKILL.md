@@ -4,7 +4,6 @@ description: Applies or suggests edits for Tuskway note comments using the curre
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Process note comments

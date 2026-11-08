@@ -4,7 +4,6 @@ description: Opens a Tuskway epic and writes intake notes for the problem, outco
 license: MIT
 metadata:
   author: Tuskway
-  provenance: independently authored for the Tuskway plugin
 ---
 
 # Start an epic
