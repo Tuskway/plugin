@@ -52,10 +52,13 @@ Update with the client's marketplace update command. Pi and OpenCode update by r
 ## Check the package
 
 ```bash
+node --test scripts/test-plugin.mjs
+node scripts/sync.mjs --check
+node scripts/validate.mjs
 node --test scripts/test-manifests.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
 ```
 
-The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
+`sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links, then prints the seven-client install, discovery, resources, MCP, OAuth, update, workflow, and routing matrix. Every one of those cells is `NOT RUN`. A binary on PATH is not a result. `liveAcceptance` and `versionBump` stay `NOT RUN`. A structural pass is not live acceptance. All nine skills are required, including `sync-design-tuskway`. A tree that omits that directory fails. The schema test downloads the Agent Plugins 1.0.0 schemas. `evals/` is a mock, not `https://tuskway.com`. Saved model transcripts are not in this tree. Host description routing is not shown. See `evals/RESULTS.md`.
 
 ## License
 
