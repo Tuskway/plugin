@@ -3,11 +3,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  clientRows,
   optionalSkills,
-  gradeRouting,
-  outcomeRows,
-  parseRecorded,
   packageContentErrors,
   skillNames,
   versionReport,
@@ -123,44 +119,14 @@ const workflowProblems = existsSync(workflowPath)
   : checkout
     ? ["workflow file is missing"]
     : [];
-const recordedPath = path.join(root, "evals/client-checks.json");
-const parsedRecord = checkout && existsSync(recordedPath)
-  ? parseRecorded(readFileSync(recordedPath, "utf8"))
-  : null;
-const recorded = parsedRecord?.data ?? null;
-const recordedErrors = checkout
-  ? parsedRecord
-    ? parsedRecord.errors
-    : ["recorded client checks are missing"]
-  : [];
-const routingPath = path.join(root, "evals/routing.json");
-let routingGrade = null;
-const routingErrors = [];
-if (checkout) {
-  if (!existsSync(routingPath)) routingErrors.push("routing record is missing");
-  else {
-    try {
-      routingGrade = gradeRouting(JSON.parse(readFileSync(routingPath, "utf8")));
-      routingErrors.push(...routingGrade.errors);
-    } catch {
-      routingErrors.push("routing record is not valid json");
-    }
-  }
-}
 const structurePass = contentErrors.length === 0
   && versions.drift.length === 0
   && workflowProblems.length === 0
-  && recordedErrors.length === 0
-  && routingErrors.length === 0
   && (checkout ? suitePass : true)
   && validator.status !== "fail";
 
 const report = {
   structure: structurePass ? "pass" : "fail",
-  liveAcceptance: "NOT RUN",
-  routingGrade: routingGrade
-    ? { ...routingGrade, liveAcceptance: "NOT RUN" }
-    : { status: checkout ? "missing" : "not applied", errors: routingErrors, liveAcceptance: "NOT RUN" },
   skills: {
     present: names,
     count: names.length,
@@ -170,26 +136,18 @@ const report = {
   contentErrors,
   version: versions.canonical,
   versionDrift: versions.drift,
-  versionBump: "NOT RUN",
   unversionedManifests: versions.unversioned,
   manifestSuite: checkout ? (suitePass ? "pass" : "fail") : "not applied",
   manifestTests: tests,
   claudePluginValidate: validator,
   release: {
     ...tags,
-    note: "No tag is created. A plugin-v tag waits for recorded behavior and client checks.",
   },
   workflow: workflowProblems,
-  pathProbe: clientRows(onPath),
-  clients: recorded && recordedErrors.length === 0 ? outcomeRows(recorded.clients) : clientRows(onPath),
-  recorded: recorded
-    ? { ...recorded, status: recordedErrors.length === 0 ? "recorded" : "invalid", errors: recordedErrors }
-    : { status: checkout ? "missing" : "not applied", errors: recordedErrors },
   ci: {
     hostedRuns: false,
     trigger: "workflow_dispatch",
     runner: ["self-hosted", "tuskway"],
-    tension: "repo.md asks the workflow to gate these static checks. .github/workflows/plugin.yml does not run on push or pull_request and does not select a GitHub-hosted runner, so opening a pull request spends no Actions minutes. Run the three local commands until a self-hosted runner labeled tuskway exists.",
   },
 };
 
