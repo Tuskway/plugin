@@ -4,7 +4,7 @@ One plugin folder, `plugins/tuskway`, installed as-is by Claude Code, Cursor, Co
 
 The plugin connects to the hosted MCP server at `https://tuskway.com/mcp`. Sign-in is OAuth in the client. The package contains no access tokens, hooks, rule files, or subagents. The root `package.json` is private so it is not published to npm. There is no per-client build output.
 
-Eight workflow skills are authored under `plugins/tuskway/skills/`. `sync-design-tuskway` is not in this package. Codex onboarding points at `./skills/setup-tuskway/SKILL.md`.
+Nine workflow skills are authored under `plugins/tuskway/skills/`, including `sync-design-tuskway`. Codex onboarding points at `./skills/setup-tuskway/SKILL.md`.
 
 ## Private testing
 

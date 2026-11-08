@@ -272,6 +272,7 @@ test("authored skills keep portable frontmatter and local links", () => {
     "plan-tuskway",
     "setup-tuskway",
     "start-epic-tuskway",
+    "sync-design-tuskway",
     "tackle-ticket-tuskway",
     "tracker-changes-tuskway",
     "write-design-tuskway",
