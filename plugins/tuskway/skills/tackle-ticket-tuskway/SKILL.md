@@ -1,6 +1,6 @@
 ---
 name: tackle-ticket-tuskway
-description: Implements one Tuskway ticket under the developer's own process and maps every acceptance criterion to passed, failed, or skipped evidence. Use when the user asks to tackle or implement a specific Tuskway ticket; not for planning a round or splitting a design.
+description: Implements one named Tuskway ticket and records each acceptance check as passed, failed, or skipped. Use when the user asks to implement a Tuskway ticket they named; not for coding work without a Tuskway ticket, planning a round, or splitting a design.
 license: MIT
 metadata:
   author: Tuskway
