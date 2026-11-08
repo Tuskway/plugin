@@ -290,11 +290,11 @@ test("validate keeps the path probe separate from recorded outcomes", () => {
   assert.equal(byClient["Claude Code"].oauth, "blocked");
   assert.equal(byClient["Claude Code"].routing, "NOT RUN");
   assert.equal(byClient["Claude Code"].workflow, "NOT RUN");
-  assert.equal(byClient.Cursor.install, "blocked");
+  assert.equal(byClient.Cursor.install, "pass");
   assert.equal(byClient.Cursor.oauth, "logged in");
-  assert.equal(byClient.Cursor.discovery, "NOT RUN");
-  assert.equal(byClient.Cursor.routing, "NOT RUN");
-  assert.equal(byClient.Cursor.mcp, "NOT RUN");
+  assert.equal(byClient.Cursor.discovery, "counted");
+  assert.equal(byClient.Cursor.routing, "file read");
+  assert.equal(byClient.Cursor.mcp, "needsAuth");
   assert.equal(byClient.Codex.discovery, "not shown");
   assert.equal(byClient["Copilot CLI"].discovery, "pass");
   assert.equal(byClient["Grok Build"].discovery, "not shown");
