@@ -47,7 +47,28 @@ function tokensFor(ticket) {
     .filter((item) => item.length > 0);
 }
 
-function fallbackPulls(merged, ticket) {
+function repoName(value) {
+  const text = String(value ?? "").trim().replace(/\.git$/i, "").replace(/\/+$/, "");
+  if (!text) return "";
+  const ssh = text.match(/^git@[^:]+:(.+)$/i);
+  if (ssh) return ssh[1].toLowerCase();
+  const https = text.match(/^https?:\/\/[^/]+\/(.+)$/i);
+  if (https) return https[1].toLowerCase();
+  return text.toLowerCase();
+}
+
+function ticketRepos(ticket) {
+  return [ticket?.repo, ticket?.trackerRepo].map(repoName).filter((item) => item.length > 0);
+}
+
+function repoDisagrees(ticket, pull) {
+  const want = ticketRepos(ticket);
+  const got = repoName(pull?.repo || pull?.baseRepo);
+  if (want.length === 0 || !got) return false;
+  return !want.includes(got);
+}
+
+function tokenPulls(merged, ticket) {
   const tokens = tokensFor(ticket);
   if (tokens.length === 0) return [];
   return merged.filter((pull) =>
@@ -55,39 +76,38 @@ function fallbackPulls(merged, ticket) {
   );
 }
 
+function none(extra) {
+  return { matches: [], missing: [], ambiguous: [], candidates: [], ...extra };
+}
+
 export function matchPulls({ tickets, pulls, explicitNumber } = {}) {
   const merged = (pulls ?? []).filter((pull) => pull.merged === true);
   if (explicitNumber != null) {
     const named = (pulls ?? []).find((pull) => pull.number === explicitNumber);
-    if (!named) return { matches: [], missing: [{ reason: "named pull request was not in the list" }], ambiguous: [] };
+    if (!named) return none({ missing: [{ reason: "named pull request was not in the list" }] });
     if (named.merged !== true) {
-      return {
-        matches: [],
-        missing: [{ number: named.number, reason: "named pull request is not merged" }],
-        ambiguous: [],
-      };
+      return none({ missing: [{ number: named.number, reason: "named pull request is not merged" }] });
     }
     const lines = tuskwayLines(named.body);
     if (lines.length === 0) {
-      return {
-        matches: [],
-        missing: [{ number: named.number, reason: "named pull request has no Tuskway line" }],
-        ambiguous: [],
-      };
+      return none({
+        matches: [{ pr: named, how: "named", title: named.title }],
+      });
     }
-    return {
+    return none({
       matches: lines.map((line) => ({ url: line.url, title: line.title, pr: named, how: "named" })),
-      missing: [],
-      ambiguous: [],
-    };
+    });
   }
   const matches = [];
   const missing = [];
   const ambiguous = [];
+  const candidates = [];
   for (const ticket of tickets ?? []) {
-    const byUrl = merged.filter((pull) =>
+    const linked = merged.filter((pull) =>
       tuskwayLines(pull.body).some((line) => line.url === ticket.url),
     );
+    const byUrl = linked.filter((pull) => !repoDisagrees(ticket, pull));
+    const otherRepo = linked.filter((pull) => repoDisagrees(ticket, pull));
     if (byUrl.length > 1) {
       ambiguous.push({
         key: ticket.key,
@@ -101,23 +121,36 @@ export function matchPulls({ tickets, pulls, explicitNumber } = {}) {
       matches.push({ key: ticket.key, url: ticket.url, pr: byUrl[0], how: "url" });
       continue;
     }
-    const byFallback = fallbackPulls(merged, ticket);
-    if (byFallback.length > 1) {
-      ambiguous.push({
+    if (otherRepo.length > 0) {
+      candidates.push({
         key: ticket.key,
         url: ticket.url,
-        reason: "more than one merged pull request matches the key",
-        numbers: byFallback.map((pull) => pull.number),
+        reason: "pull request repo does not match the ticket repo",
+        numbers: otherRepo.map((pull) => pull.number),
       });
       continue;
     }
-    if (byFallback.length === 1) {
-      matches.push({ key: ticket.key, url: ticket.url, pr: byFallback[0], how: "fallback" });
+    const byToken = tokenPulls(merged, ticket);
+    if (byToken.length > 0) {
+      candidates.push({
+        key: ticket.key,
+        url: ticket.url,
+        reason: "a ticket token is not corroboration; name the pull request",
+        numbers: byToken.map((pull) => pull.number),
+      });
+      if (byToken.length > 1) {
+        ambiguous.push({
+          key: ticket.key,
+          url: ticket.url,
+          reason: "more than one merged pull request matches the key",
+          numbers: byToken.map((pull) => pull.number),
+        });
+      }
       continue;
     }
     missing.push({ key: ticket.key, url: ticket.url, reason: "no merged pull request" });
   }
-  return { matches, missing, ambiguous };
+  return { matches, missing, ambiguous, candidates };
 }
 
 function untrustedParts(input) {
@@ -166,12 +199,29 @@ export function proposal(input) {
   if (pr == null) return { writes: [] };
   const conflict = input.contradicts === true
     || (input.notes != null && input.decisionId && decisionConflict(input.notes, input.decisionId, edit));
-  const text = conflict
-    ? `Open question after PR #${pr}: ${edit}`
-    : `${edit}\n\nUpdated after PR #${pr}`;
+  const attribution = `(from PR #${pr})`;
+  let text;
+  let path;
+  let kind;
+  if (conflict) {
+    text = `Open question after PR #${pr}: ${edit}`;
+    path = "notes.md";
+    kind = "question";
+  } else if (input.newDecision === true) {
+    const trimmed = edit.trim();
+    const ending = trimmed.match(/\(from PR #(\d+)\)\s*$/);
+    if (ending && ending[1] !== String(pr)) return { writes: [] };
+    text = ending ? trimmed : `${trimmed} ${attribution}`;
+    if (!text.endsWith(attribution)) return { writes: [] };
+    if (/\(from PR #\d+\)/.test(text.slice(0, -attribution.length))) return { writes: [] };
+    path = "notes.md";
+    kind = "decision";
+  } else {
+    text = `${edit}\n\nUpdated after PR #${pr}`;
+    path = input.path;
+    kind = "update";
+  }
   if (copiesUntrusted(text, input)) return { writes: [] };
-  const path = conflict ? "notes.md" : input.path;
-  const kind = conflict ? "question" : "update";
   if (!canWrite(input)) {
     return { writes: [{ tool: "suggest_change", path, kind, message: text }] };
   }

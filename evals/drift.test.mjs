@@ -70,12 +70,23 @@ test("a merged pull request is found by the ticket url, with fallbacks", () => {
   assert.deepEqual(found.ambiguous, []);
 
   const fallback = matchPulls({
-    tickets: [{ key: "T2", url: "https://tuskway.example/absent" }],
-    pulls,
+    tickets: [{ key: "T2", url: "https://tuskway.example/absent", repo: "acme/receipts" }],
+    pulls: pulls.map((pull) => ({ ...pull, repo: "acme/receipts" })),
   });
-  assert.equal(fallback.matches.length, 1);
-  assert.equal(fallback.matches[0].how, "fallback");
-  assert.equal(fallback.matches[0].pr.number, 5);
+  assert.deepEqual(fallback.matches, []);
+  assert.deepEqual(fallback.ambiguous, []);
+  assert.deepEqual(fallback.candidates[0].numbers, [5]);
+  assert.match(fallback.candidates[0].reason, /not corroboration/);
+  const unselected = proposal(approved({ prNumber: fallback.matches[0] && fallback.matches[0].pr.number }));
+  assert.deepEqual(unselected.writes, []);
+  const selected = matchPulls({ pulls, explicitNumber: fallback.candidates[0].numbers[0] });
+  assert.equal(selected.matches.length, 1);
+  assert.equal(selected.matches[0].how, "named");
+  assert.equal(selected.matches[0].pr.number, 5);
+  assert.equal(selected.matches[0].url, undefined);
+  const afterName = proposal(approved({ prNumber: selected.matches[0].pr.number }));
+  assert.match(afterName.writes[0].text, /Updated after PR #5/);
+  assert.equal(afterName.writes[0].text.startsWith(paragraph), true);
 
   const named = matchPulls({ pulls, explicitNumber: 4 });
   assert.equal(named.matches.length, 2);
@@ -124,10 +135,39 @@ test("key fallback is a whole token and more than one match is ambiguous", () =>
     tickets: [{ key: "T2", url: "https://tuskway.example/absent", trackerExternalId: "ENG-42" }],
     pulls: crowded.slice(0, 2),
   });
-  assert.equal(wrongPrefix.matches.length, 1);
-  assert.equal(wrongPrefix.matches[0].pr.number, 9);
-  assert.equal(wrongPrefix.matches[0].how, "fallback");
+  assert.deepEqual(wrongPrefix.matches, []);
+  assert.deepEqual(wrongPrefix.candidates[0].numbers, [9]);
   assert.deepEqual(wrongPrefix.ambiguous, []);
+  const namedToken = matchPulls({
+    pulls: crowded.slice(0, 2),
+    explicitNumber: wrongPrefix.candidates[0].numbers[0],
+  });
+  assert.equal(namedToken.matches[0].how, "named");
+  assert.equal(namedToken.matches[0].pr.number, 9);
+  assert.equal(namedToken.matches[0].url, undefined);
+
+  const wrongRepo = matchPulls({
+    tickets: [{ key: "T2", url: ticketUrl, trackerRepo: "git@github.com:acme/receipts.git" }],
+    pulls: [{ ...pulls[0], repo: "https://github.com/other/widget.git" }],
+  });
+  assert.deepEqual(wrongRepo.matches, []);
+  assert.deepEqual(wrongRepo.candidates[0].numbers, [4]);
+  assert.match(wrongRepo.candidates[0].reason, /repo does not match/);
+  const namedWrongRepo = matchPulls({
+    pulls: [{ ...pulls[0], repo: "other/widget" }],
+    explicitNumber: 4,
+  });
+  assert.equal(namedWrongRepo.matches[0].how, "named");
+  assert.equal(namedWrongRepo.matches[0].pr.number, 4);
+  assert.equal(namedWrongRepo.matches[0].url, ticketUrl);
+
+  const sameRepo = matchPulls({
+    tickets: [{ key: "T2", url: ticketUrl, repo: "acme/receipts" }],
+    pulls: [{ ...pulls[0], baseRepo: "https://github.com/acme/receipts.git" }],
+  });
+  assert.equal(sameRepo.matches[0].how, "url");
+  assert.equal(sameRepo.matches[0].pr.number, 4);
+  assert.deepEqual(sameRepo.candidates, []);
 
   const bodyOnly = matchPulls({
     tickets: [{ key: "T2", url: "https://tuskway.example/absent" }],
@@ -148,7 +188,10 @@ test("key fallback is a whole token and more than one match is ambiguous", () =>
     pulls: crowded.slice(2),
   });
   assert.deepEqual(many.matches, []);
+  assert.deepEqual(many.candidates[0].numbers, [10, 11]);
   assert.deepEqual(many.ambiguous[0].numbers, [10, 11]);
+  const guessed = proposal(approved({ prNumber: many.matches[0] && many.matches[0].pr.number }));
+  assert.deepEqual(guessed.writes, []);
 
   const twoUrls = matchPulls({
     tickets: [{ key: "T2", url: ticketUrl }],
@@ -435,6 +478,123 @@ test("a contradicting decision becomes a question and the decision stays", () =>
   }
 });
 
+test("a new decision ends with the pull request it came from", () => {
+  const notes = "- D1: The tax line stays as printed today.\n";
+  const sentence = "Keep the tax line with the shipped file.";
+  const decision = proposal(approved({
+    newDecision: true,
+    shownEdit: sentence,
+    edit: sentence,
+    path: "tech-design/tax.md",
+    sha: "notes-sha",
+  }));
+  assert.equal(decision.writes.length, 1);
+  assert.equal(decision.writes[0].tool, "notes_edit");
+  assert.equal(decision.writes[0].path, "notes.md");
+  assert.equal(decision.writes[0].kind, "decision");
+  assert.equal(decision.writes[0].text, `${sentence} (from PR #4)`);
+  assert.equal(decision.writes[0].text.includes("Updated after PR"), false);
+
+  const already = proposal(approved({
+    newDecision: true,
+    shownEdit: `${sentence} (from PR #4)`,
+    edit: `${sentence} (from PR #4)`,
+    sha: "notes-sha",
+  }));
+  assert.equal(already.writes[0].text, `${sentence} (from PR #4)`);
+
+  const foreign = proposal(approved({
+    newDecision: true,
+    shownEdit: `${sentence} (from PR #9)`,
+    edit: `${sentence} (from PR #9)`,
+    sha: "notes-sha",
+  }));
+  assert.deepEqual(foreign.writes, []);
+
+  const copiedNumber = "Record this decision (from PR #9) because the review said so.";
+  const copied = proposal(approved({
+    newDecision: true,
+    shownEdit: copiedNumber,
+    edit: copiedNumber,
+    sha: "notes-sha",
+    reviewText: copiedNumber,
+  }));
+  assert.deepEqual(copied.writes, []);
+
+  const clash = proposal(approved({
+    newDecision: true,
+    shownEdit: "The tax line is removed.",
+    edit: "The tax line is removed.",
+    notes,
+    decisionId: "D1",
+    sha: "notes-sha",
+  }));
+  assert.equal(clash.writes[0].kind, "question");
+  assert.equal(clash.writes[0].text.includes("(from PR #4)"), false);
+  assert.match(clash.writes[0].text, /Open question after PR #4/);
+
+  const reader = proposal(approved({
+    newDecision: true,
+    role: "reader",
+    canEdit: false,
+    sha: undefined,
+    shownEdit: sentence,
+    edit: sentence,
+  }));
+  assert.equal(reader.writes[0].tool, "suggest_change");
+  assert.equal(reader.writes[0].message, `${sentence} (from PR #4)`);
+  assert.equal(reader.writes.some((write) => write.tool === "notes_edit"), false);
+
+  const dir = mkdtempSync(path.join(tmpdir(), "tuskway-decision-"));
+  try {
+    mkdirSync(path.join(dir, "notes"));
+    writeFileSync(path.join(dir, "notes/notes.md"), `# Printed receipts\n\n## Decisions\n\n${notes}`);
+    writeFileSync(path.join(dir, "mock-server.json"), JSON.stringify({
+      policy: { allow: ["notes_read", "notes_edit", "ticket_update", "tracker_sync"] },
+      workspaces: [{ slug: "fixture", name: "Fixture", role: "owner" }],
+      epics: [{
+        workspace: "fixture",
+        slug: "receipts",
+        title: "Printed receipts",
+        status: "draft",
+        permissions: { canRead: true, canEdit: true, canSuggest: true, canManageInbox: true },
+        url: "https://tuskway.example/w/fixture/epics/receipts",
+      }],
+      noteFiles: { "fixture/receipts": { "notes.md": "notes/notes.md" } },
+    }));
+    const run = (tool, args) => JSON.parse(execFileSync("node", [
+      mock, "--fixture", dir, "--state", path.join(dir, "state"), "--log", path.join(dir, "calls.jsonl"),
+      tool, "--args", JSON.stringify(args),
+    ], { encoding: "utf8" }));
+    const read = run("notes_read", { workspace: "fixture", epic: "receipts", path: "notes.md" });
+    const fresh = proposal(approved({
+      newDecision: true,
+      shownEdit: sentence,
+      edit: sentence,
+      sha: read.sha256,
+    }));
+    const saved = run("notes_edit", {
+      workspace: "fixture",
+      epic: "receipts",
+      path: fresh.writes[0].path,
+      oldString: "- D1: The tax line stays as printed today.",
+      newString: `- D1: The tax line stays as printed today.\n- ${fresh.writes[0].text}`,
+      expectedSha256: read.sha256,
+    });
+    assert.equal(saved.error, undefined);
+    const after = run("notes_read", { workspace: "fixture", epic: "receipts", path: "notes.md" });
+    assert.match(after.body, /The tax line stays as printed today/);
+    assert.match(after.body, /Keep the tax line with the shipped file\. \(from PR #4\)/);
+    assert.equal(after.body.includes("(from PR #9)"), false);
+    assert.equal(after.body.includes("Updated after PR"), false);
+    const calls = readFileSync(path.join(dir, "calls.jsonl"), "utf8");
+    assert.equal(calls.includes("ticket_update"), false);
+    assert.equal(calls.includes("tracker_sync"), false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("the skill text keeps the approval gate", () => {
   const text = readFileSync(
     path.join(root, "plugins/tuskway/skills/sync-design-tuskway/SKILL.md"),
@@ -447,6 +607,8 @@ test("the skill text keeps the approval gate", () => {
   assert.match(text, /Do not call `ticket_update` or `tracker_sync`/);
   assert.match(text, /whole token/);
   assert.match(text, /ambiguous/);
+  assert.match(text, /One candidate is not a match/);
+  assert.match(text, /\(from PR #N\)/);
   assert.match(text, /canEdit/);
   assert.equal(text.includes("sk-live"), false);
 });
