@@ -1,8 +1,8 @@
 {
-  "recordedAt": "2026-11-08T14:33:23Z",
+  "recordedAt": "2026-11-08T15:32:00Z",
   "host": "linux x86_64",
   "base": "db62908225bd7fab89f2160999724715b7e61be5",
-  "note": "Commands ran against this local checkout in isolated homes. GitHub shorthand installs and in-app clicks were not run. Cursor CLI login completed. Plugin install, listed skill names, automatic routing, Tuskway MCP OAuth, and model workflows are separate and were not completed. A binary on PATH is not a result.",
+  "note": "Commands ran in isolated homes. GitHub shorthand installs and in-app clicks were not run. Tuskway/plugin is public: anonymous git ls-remote of https://github.com/Tuskway/plugin.git returned db62908225bd7fab89f2160999724715b7e61be5. Cursor CLI login completed, and the plugin was installed for that user from that ref. The details screen counted nine skills and named six before an ellipsis. Six fresh sessions then read skill files. That is not automatic routing. Tuskway MCP still needs sign-in. A model workflow was not run. A binary on PATH is not a result.",
   "clients": [
     {
       "client": "Claude Code",
@@ -39,21 +39,23 @@
       "install": "pass",
       "packageValidation": "NOT RUN",
       "packageDetail": "agent plugin has a marketplace command and no validate command.",
-      "pluginInstall": "blocked",
+      "pluginInstall": "pass",
       "pluginCommand": "agent plugin marketplace add https://github.com/Tuskway/plugin.git",
-      "pluginDetail": "After CLI login, marketplace add ran git ls-remote and stopped: could not read a GitHub username, and terminal prompts are disabled. The repository is private and this environment has no GitHub credential. No plugin was indexed.",
-      "discovery": "NOT RUN",
-      "discoveryDetail": "Skill names were not listed. The marketplace was not added.",
+      "pluginDetail": "Anonymous git ls-remote returned db62908225bd7fab89f2160999724715b7e61be5. marketplace add indexed marketplace tuskway at that ref. Interactive /plugin list, then Install for you, reported Installed Tuskway (user scope).",
+      "discovery": "counted",
+      "discoveryCommand": "/plugin list, then the Tuskway details screen",
+      "discoveryDetail": "The details screen said Skills: 9 and named comments-tuskway, draft-tickets-tuskway, plan-tuskway, setup-tuskway, start-epic-tuskway, and sync-design-tuskway, then an ellipsis. It did not print the other three names.",
       "resources": "NOT RUN",
-      "mcp": "NOT RUN",
-      "mcpDetail": "agent mcp list in an empty workspace reported no configured servers. Tuskway MCP sign-in was not started. This is separate from CLI login.",
+      "mcp": "needsAuth",
+      "mcpDetail": "After install, getMcpTools for plugin-tuskway-tuskway returned needsAuth and no tools. agent mcp list does not see plugin servers. agent mcp login tuskway, using the public server URL in the isolated CLI config, is waiting on a browser callback that is local to this environment. No Tuskway tool was called.",
       "oauth": "logged in",
       "oauthCommand": "agent status",
-      "oauthDetail": "agent login completed and agent status reports logged in. The one-time browser challenge was removed and is not stored here.",
+      "oauthDetail": "agent login completed and agent status reports logged in. That is CLI login, not Tuskway MCP sign-in. The one-time browser challenge was removed and is not stored here.",
       "update": "NOT RUN",
       "workflow": "NOT RUN",
-      "routing": "NOT RUN",
-      "routingDetail": "The six cases in evals/routing.json were not started. No plugin is installed, so a session would not be installed-plugin routing."
+      "workflowDetail": "No read-only Tuskway tool ran. MCP sign-in is still waiting.",
+      "routing": "file read",
+      "routingDetail": "Six fresh ask mode sessions in empty workspaces, with no plugin directory flag. The system event had no skill list. design-positive and design-paraphrase read write-design-tuskway/SKILL.md as the first tool. tackle-positive read tackle-ticket-tuskway/SKILL.md first. design-near-miss read no Tuskway skill. tackle-near-miss read tackle-ticket-tuskway/SKILL.md after other tools. plan-near-miss read plan-tuskway/SKILL.md first. None showed a skill before a tool call."
     },
     {
       "client": "Codex",
