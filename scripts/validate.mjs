@@ -1,37 +1,30 @@
+import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { skillNames, skillSetErrors, versionReport } from "./package-contract.mjs";
+import {
+  clientRows,
+  packageContentErrors,
+  skillNames,
+  versionReport,
+  workflowErrors,
+} from "./package-contract.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-
-const clients = [
-  ["Claude Code", "claude"],
-  ["Cursor", "cursor"],
-  ["Codex", "codex"],
-  ["Copilot CLI", "copilot"],
-  ["Grok Build", "grok"],
-  ["OpenCode", "opencode"],
-  ["Pi", "pi"],
-];
-
-const checks = [
-  "install",
-  "discovery",
-  "resources",
-  "mcp",
-  "oauth",
-  "update",
-  "workflow",
-  "routing",
-];
 
 function onPath(command) {
   const found = spawnSync("which", [command], { encoding: "utf8" });
   return found.status === 0 ? found.stdout.trim() : null;
 }
 
-function claudeValidator() {
+function claudeValidator(root) {
+  if (root !== repoRoot) {
+    return {
+      status: "NOT RUN",
+      command: "claude plugin validate --strict",
+      reason: "Strict Claude validation is not run for an alternate root.",
+    };
+  }
   const binary = onPath("claude");
   if (!binary) {
     return {
@@ -41,7 +34,7 @@ function claudeValidator() {
     };
   }
   const ran = spawnSync(binary, ["plugin", "validate", "--strict"], {
-    cwd: path.join(repoRoot, "plugins/tuskway"),
+    cwd: path.join(root, "plugins/tuskway"),
     encoding: "utf8",
   });
   return {
@@ -69,7 +62,14 @@ function releaseTags(root) {
 function args(argv) {
   let root = repoRoot;
   for (let i = 2; i < argv.length; i += 1) {
-    if (argv[i] === "--root") root = path.resolve(argv[++i]);
+    if (argv[i] === "--root") {
+      const value = argv[++i];
+      if (!value) {
+        console.error("missing --root");
+        process.exit(2);
+      }
+      root = path.resolve(value);
+    }
     else {
       console.error(`unknown argument ${argv[i]}`);
       process.exit(2);
@@ -80,7 +80,7 @@ function args(argv) {
 
 const root = args(process.argv);
 const names = skillNames(root);
-const skillErrors = skillSetErrors(names);
+const contentErrors = packageContentErrors(root);
 const versions = versionReport(root);
 function suiteEnv() {
   const env = { ...process.env };
@@ -88,24 +88,41 @@ function suiteEnv() {
   return env;
 }
 
-function suiteSummary(stdout) {
-  const tests = Number(/# tests (\d+)/.exec(stdout)?.[1] ?? "0");
-  const fail = Number(/# fail (\d+)/.exec(stdout)?.[1] ?? "1");
-  return { tests, fail };
+function lastCount(stdout, label) {
+  const matches = [...String(stdout).matchAll(new RegExp(`# ${label} (\\d+)`, "g"))];
+  if (matches.length === 0) return null;
+  return Number(matches.at(-1)[1]);
 }
 
-const suite = spawnSync("node", ["--test", "scripts/test-manifests.mjs"], {
-  cwd: repoRoot,
-  encoding: "utf8",
-  env: suiteEnv(),
-});
-const summary = suiteSummary(suite.stdout ?? "");
-const suitePass = suite.status === 0 && summary.fail === 0 && summary.tests >= 8;
-const validator = claudeValidator();
+const checkout = root === repoRoot;
+const suite = checkout
+  ? spawnSync("node", ["--test", "scripts/test-manifests.mjs"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      env: suiteEnv(),
+    })
+  : null;
+const tests = suite ? lastCount(suite.stdout, "tests") : null;
+const fails = suite ? lastCount(suite.stdout, "fail") : null;
+const suitePass = Boolean(
+  suite
+  && suite.status === 0
+  && tests !== null
+  && fails === 0
+  && String(suite.stdout).includes("authored skills keep portable frontmatter"),
+);
+const validator = claudeValidator(root);
 const tags = releaseTags(root);
-const structurePass = skillErrors.length === 0
+const workflowPath = path.join(root, ".github/workflows/plugin.yml");
+const workflowProblems = existsSync(workflowPath)
+  ? workflowErrors(readFileSync(workflowPath, "utf8"))
+  : checkout
+    ? ["workflow file is missing"]
+    : [];
+const structurePass = contentErrors.length === 0
   && versions.drift.length === 0
-  && suitePass
+  && workflowProblems.length === 0
+  && (checkout ? suitePass : true)
   && validator.status !== "fail";
 
 const report = {
@@ -115,27 +132,22 @@ const report = {
     present: names,
     count: names.length,
     optionalAbsent: ["sync-design-tuskway"].filter((name) => !names.includes(name)),
-    errors: skillErrors,
+    errors: contentErrors,
   },
+  contentErrors,
   version: versions.canonical,
   versionDrift: versions.drift,
+  versionBump: "NOT RUN",
   unversionedManifests: versions.unversioned,
-  manifestSuite: suitePass ? "pass" : "fail",
-  manifestTests: summary.tests,
+  manifestSuite: checkout ? (suitePass ? "pass" : "fail") : "not applied",
+  manifestTests: tests,
   claudePluginValidate: validator,
   release: {
     ...tags,
     note: "No tag is created. A plugin-v tag waits for recorded behavior and client checks.",
   },
-  clients: clients.map(([name, command]) => {
-    const binary = onPath(command);
-    const row = { client: name, binary: binary ? "present" : "absent" };
-    for (const check of checks) row[check] = "NOT RUN";
-    if (name === "Cursor") {
-      row.note = "Grok Bot uses the Cursor install and was not run separately.";
-    }
-    return row;
-  }),
+  workflow: workflowProblems,
+  clients: clientRows(onPath),
   ci: {
     hostedRuns: false,
     trigger: "workflow_dispatch",
@@ -144,7 +156,7 @@ const report = {
   },
 };
 
-if (!structurePass) {
+if (checkout && !suitePass) {
   console.error(suite.stdout);
   console.error(suite.stderr);
 }

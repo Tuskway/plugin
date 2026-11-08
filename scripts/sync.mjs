@@ -9,7 +9,14 @@ function args(argv) {
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--check") parsed.check = true;
-    else if (arg === "--root") parsed.root = path.resolve(argv[++i]);
+    else if (arg === "--root") {
+      const value = argv[++i];
+      if (!value) {
+        console.error("missing --root");
+        process.exit(2);
+      }
+      parsed.root = path.resolve(value);
+    }
     else {
       console.error(`unknown argument ${arg}`);
       process.exit(2);
