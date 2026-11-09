@@ -268,6 +268,24 @@ test("names, descriptions, and versions agree", () => {
   assert.equal(codex.onboardingSkill, "./skills/setup-tuskway/SKILL.md");
 });
 
+test("plan and tackle descriptions stay on a named Tuskway task", () => {
+  const plan = readFileSync(
+    path.join(pluginRoot, "skills/plan-tuskway/SKILL.md"),
+    "utf8",
+  );
+  const tackle = readFileSync(
+    path.join(pluginRoot, "skills/tackle-ticket-tuskway/SKILL.md"),
+    "utf8",
+  );
+  assert.match(plan, /ready to start/);
+  assert.match(plan, /next round of a Tuskway epic/);
+  assert.match(plan, /personal schedules/);
+  assert.equal(plan.includes("plan an epic"), false);
+  assert.match(tackle, /Tuskway ticket they named/);
+  assert.match(tackle, /without a Tuskway ticket/);
+  assert.equal(/weekend|receipt total/i.test(`${plan}\n${tackle}`), false);
+});
+
 test("authored skills keep portable frontmatter and local links", () => {
   const skillsDir = path.join(pluginRoot, "skills");
   assert.deepEqual(skillNames(root), requiredSkills);

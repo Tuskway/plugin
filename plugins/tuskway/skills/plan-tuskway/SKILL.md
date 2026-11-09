@@ -1,6 +1,6 @@
 ---
 name: plan-tuskway
-description: Shows which Tuskway tickets can start together and writes a ready-only handoff line for each. Use when the user asks to plan an epic or the next round; not for implementing tickets or launching agents.
+description: Shows which tickets in one Tuskway epic can start together and writes a ready-only handoff for each. Use when the user asks which Tuskway tickets are ready to start, or asks for the next round of a Tuskway epic; not for personal schedules, general planning, implementing a ticket, or launching agents.
 license: MIT
 metadata:
   author: Tuskway
