@@ -19,7 +19,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { packageContentErrors, requiredSkills, skillNames, versionReport } from "./package-contract.mjs";
 import { fetchSchema, schemaErrors } from "./agent-schema.mjs";
-import { buildOpenAiZip, defaultZipPath } from "./build-openai-zip.mjs";
+import { buildOpenAiZip, defaultZipPath, folderError } from "./build-openai-zip.mjs";
 import { treeErrors, submoduleErrors, MAX_FILES, MAX_NON_IMAGE_BYTES } from "./package-limits.mjs";
 import { openaiExtensionErrors, reviewErrors } from "./openai-review.mjs";
 import { releaseTagError } from "./attach-release.mjs";
@@ -513,6 +513,8 @@ test("OpenAI ZIP layout is one plugin root and fails on credentials", async () =
   assert.equal(names.some((name) => name.startsWith("skills/")), true);
   assert.equal(names.some((name) => name.startsWith("assets/")), true);
   assert.equal(names.some((name) => name.includes(".app.json") || name.split("/").includes("apps")), false);
+  assert.equal(names.some((name) => name.split("/").some((part) => part.startsWith("."))), false);
+  assert.equal(names.includes("skills/.gitkeep"), false);
   const zipText = readFileSync(built.zipPath);
   assert.equal(zipText.includes(Buffer.from("test_credentials")), false);
   assert.equal(zipText.includes(Buffer.from("reviewer_instructions")), false);
@@ -567,6 +569,56 @@ test("OpenAI ZIP layout is one plugin root and fails on credentials", async () =
   } finally {
     rmSync(broken, { recursive: true, force: true });
     rmSync(path.join(root, "dist"), { recursive: true, force: true });
+  }
+});
+
+test("OpenAI ZIP bytes stay identical and the folder cannot escape", async () => {
+  const stage = mkdtempSync(path.join(tmpdir(), "tuskway-stage-"));
+  assert.equal(folderError(stage, "."), "--folder must be a single directory name");
+  assert.equal(folderError(stage, ".."), "--folder must be a single directory name");
+  assert.equal(folderError(stage, "tuskway"), null);
+  const outside = path.resolve(stage, "..", "escape");
+  assert.equal(outside.startsWith(`${path.resolve(stage)}${path.sep}`), false);
+
+  const first = path.join(tmpdir(), `tuskway-bytes-a-${process.pid}.zip`);
+  const second = path.join(tmpdir(), `tuskway-bytes-b-${process.pid}.zip`);
+  try {
+    const left = await buildOpenAiZip({ plugin: pluginRoot, folder: "", out: first });
+    const right = await buildOpenAiZip({ plugin: pluginRoot, folder: "", out: second });
+    assert.deepEqual(left.errors, [], left.errors.join("\n"));
+    assert.deepEqual(right.errors, []);
+    assert.deepEqual(readFileSync(first), readFileSync(second));
+    for (const folder of [".", ".."]) {
+      const escaped = await buildOpenAiZip({
+        plugin: pluginRoot,
+        folder,
+        out: path.join(tmpdir(), `tuskway-escape-${folder.length}-${process.pid}.zip`),
+      });
+      assert.equal(escaped.errors.some((error) => error.includes("--folder")), true, folder);
+      assert.equal(escaped.zipPath, undefined);
+    }
+  } finally {
+    rmSync(first, { force: true });
+    rmSync(second, { force: true });
+    rmSync(stage, { recursive: true, force: true });
+  }
+});
+
+test("a symlinked skills directory is rejected before copy", async () => {
+  const linked = mkdtempSync(path.join(tmpdir(), "tuskway-linked-"));
+  const out = path.join(linked, "linked.zip");
+  try {
+    cpSync(pluginRoot, linked, {
+      recursive: true,
+      filter: (candidate) => path.basename(candidate) !== "skills",
+    });
+    mkdirSync(linked, { recursive: true });
+    symlinkSync(path.join(pluginRoot, "skills"), path.join(linked, "skills"));
+    const result = await buildOpenAiZip({ plugin: linked, folder: "", out });
+    assert.equal(result.errors.some((error) => error.includes("symlink skills")), true);
+    assert.equal(existsSync(out), false);
+  } finally {
+    rmSync(linked, { recursive: true, force: true });
   }
 });
 

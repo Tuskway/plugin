@@ -29,10 +29,11 @@ async function github(url, token, init) {
       body = { message: "response was not json" };
     }
   }
-  if (!response.ok) {
-    throw new Error(`${response.status} ${body.message ?? "request failed"}`);
-  }
-  return body;
+  return { ok: response.ok, status: response.status, body };
+}
+
+function githubError(result) {
+  return new Error(`${result.status} ${result.body.message ?? "request failed"}`);
 }
 
 async function main() {
@@ -56,19 +57,40 @@ async function main() {
   const zipPath = defaultZipPath(repoRoot, plugin.version);
   const zip = readFileSync(zipPath);
   const notes = plugin.extensions?.["com.openai"]?.publication?.release_notes ?? "";
-  const release = await github(`https://api.github.com/repos/${repository}/releases`, token, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      tag_name: tag,
-      name: tag,
-      body: notes,
-      draft: false,
-      prerelease: false,
-    }),
-  });
   const assetName = path.basename(zipPath);
-  await github(
+  const found = await github(
+    `https://api.github.com/repos/${repository}/releases/tags/${encodeURIComponent(tag)}`,
+    token,
+    { method: "GET" },
+  );
+  let release = found.body;
+  if (found.status === 404) {
+    const created = await github(`https://api.github.com/repos/${repository}/releases`, token, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tag_name: tag,
+        name: tag,
+        body: notes,
+        draft: false,
+        prerelease: false,
+      }),
+    });
+    if (!created.ok) throw githubError(created);
+    release = created.body;
+  } else if (!found.ok) {
+    throw githubError(found);
+  }
+  for (const asset of release.assets ?? []) {
+    if (asset.name !== assetName) continue;
+    const removed = await github(
+      `https://api.github.com/repos/${repository}/releases/assets/${asset.id}`,
+      token,
+      { method: "DELETE" },
+    );
+    if (!removed.ok && removed.status !== 404) throw githubError(removed);
+  }
+  const uploaded = await github(
     `https://uploads.github.com/repos/${repository}/releases/${release.id}/assets?name=${encodeURIComponent(assetName)}`,
     token,
     {
@@ -77,6 +99,7 @@ async function main() {
       body: zip,
     },
   );
+  if (!uploaded.ok) throw githubError(uploaded);
   console.log(JSON.stringify({ ok: true, tag, asset: assetName }));
 }
 
@@ -84,5 +107,10 @@ const isMain = process.argv[1]
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (isMain) {
-  await main();
+  try {
+    await main();
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
 }

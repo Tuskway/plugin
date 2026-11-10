@@ -3,10 +3,12 @@ import {
   cpSync,
   lstatSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
   statSync,
+  utimesSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -20,6 +22,7 @@ const pluginSchemaUrl = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.j
 const mcpSchemaUrl = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
 
 const credentialPattern = /(?:^|[^A-Za-z0-9])(?:sk-[A-Za-z0-9][A-Za-z0-9-]{7,}|ghp_[A-Za-z0-9]{8,}|github_pat_[A-Za-z0-9_]{8,}|xox[baprs]-[A-Za-z0-9-]{8,})|(?:bearer\s+[A-Za-z0-9._~+/-]{8,})|(?:api[_-]?key|client[_-]?secret)\s*[:=]\s*\S+|authorization\s*:\s*\S+/i;
+const fixedMtime = new Date(Date.UTC(1980, 0, 1));
 
 export function defaultZipPath(root, version) {
   return path.join(root, "dist", `tuskway-openai-${version}.zip`);
@@ -40,7 +43,9 @@ function args(argv) {
     const arg = argv[i];
     if (arg === "--folder") {
       const value = argv[++i];
-      if (!value || !/^[A-Za-z0-9._-]+$/.test(value)) fail(["--folder must be a single path segment"]);
+      if (!value || value === "." || value === ".." || !/^[A-Za-z0-9._-]+$/.test(value)) {
+        fail(["--folder must be a single directory name"]);
+      }
       parsed.folder = value;
     } else if (arg === "--plugin") {
       const value = argv[++i];
@@ -68,9 +73,22 @@ function skillFolderName(text, folder) {
   return { name };
 }
 
+export function folderError(stageParent, folder) {
+  if (!folder) return null;
+  if (folder === "." || folder === ".." || !/^[A-Za-z0-9._-]+$/.test(folder)) {
+    return "--folder must be a single directory name";
+  }
+  const parent = path.resolve(stageParent);
+  const destination = path.resolve(parent, folder);
+  const inside = destination === parent || destination.startsWith(`${parent}${path.sep}`);
+  if (!inside) return "--folder must stay inside the stage";
+  return null;
+}
+
 function walkFiles(dir) {
   const files = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
     const full = path.join(dir, entry.name);
     if (lstatSync(full).isSymbolicLink()) {
       return { error: `symlink ${path.relative(dir, full) || entry.name}` };
@@ -102,7 +120,16 @@ function copyPackage(pluginDir, destination) {
   }
   for (const name of ["skills", "assets"]) {
     const source = path.join(pluginDir, name);
-    if (!statSync(source, { throwIfNoEntry: false })?.isDirectory()) {
+    const listed = lstatSync(source, { throwIfNoEntry: false });
+    if (!listed) {
+      errors.push(`${name}/ is missing`);
+      continue;
+    }
+    if (listed.isSymbolicLink()) {
+      errors.push(`symlink ${name}`);
+      continue;
+    }
+    if (!listed.isDirectory()) {
       errors.push(`${name}/ is missing`);
       continue;
     }
@@ -161,6 +188,16 @@ async function manifestErrors(destination) {
   return { errors, version: plugin.version };
 }
 
+function stampTree(dir) {
+  utimesSync(dir, fixedMtime, fixedMtime);
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (lstatSync(full).isSymbolicLink()) continue;
+    if (entry.isDirectory()) stampTree(full);
+    else utimesSync(full, fixedMtime, fixedMtime);
+  }
+}
+
 function zipNames(zipPath) {
   const listed = spawnSync("zipinfo", ["-1", zipPath], { encoding: "utf8" });
   if (listed.status !== 0) {
@@ -172,11 +209,12 @@ function zipNames(zipPath) {
 }
 
 export async function buildOpenAiZip({ plugin, folder, out }) {
-  const stageParent = path.join(tmpdir(), `tuskway-openai-${process.pid}`);
-  rmSync(stageParent, { recursive: true, force: true });
-  const destination = folder ? path.join(stageParent, folder) : stageParent;
-  mkdirSync(destination, { recursive: true });
+  const stageParent = mkdtempSync(path.join(tmpdir(), "tuskway-openai-"));
+  const escaped = folderError(stageParent, folder);
+  const destination = folder ? path.resolve(stageParent, folder) : stageParent;
   try {
+    if (escaped) return { errors: [escaped] };
+    mkdirSync(destination, { recursive: true });
     const copyProblems = copyPackage(plugin, destination);
     if (copyProblems.length > 0) return { errors: copyProblems };
     const problems = [
@@ -188,8 +226,15 @@ export async function buildOpenAiZip({ plugin, folder, out }) {
     const zipPath = out || defaultZipPath(repoRoot, version);
     mkdirSync(path.dirname(zipPath), { recursive: true });
     rmSync(zipPath, { force: true });
-    const packed = spawnSync("zip", ["-r", "-X", "-q", zipPath, folder || "plugin.json", ...(folder ? [] : ["mcp.json", "skills", "assets"])], {
+    stampTree(stageParent);
+    const listed = walkFiles(stageParent);
+    if (listed.error) return { errors: [listed.error] };
+    const files = listed.files
+      .map((full) => path.relative(stageParent, full).split(path.sep).join("/"))
+      .sort();
+    const packed = spawnSync("zip", ["-X", "-q", zipPath, ...files], {
       cwd: stageParent,
+      env: { ...process.env, TZ: "UTC" },
     });
     if (packed.status !== 0) return { errors: ["zip failed"] };
     const layout = zipLayoutErrors(zipNames(zipPath));

@@ -85,9 +85,19 @@ export function schemaErrors(schema, data, pointer = "", rootSchema = schema) {
 }
 
 export async function fetchSchema(url) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(20000) });
-  if (!response.ok) throw new Error(`${url} ${response.status}`);
-  const schema = await response.json();
-  if (schema.$id !== url) throw new Error(`${url} schema id`);
-  return schema;
+  const attempts = String(url).endsWith("/mcp.schema.json") ? 2 : 1;
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(20000) });
+      if (!response.ok) throw new Error(`${url} ${response.status}`);
+      const schema = await response.json();
+      if (schema.$id !== url) throw new Error(`${url} schema id`);
+      return schema;
+    } catch (error) {
+      lastError = error;
+      if (attempt + 1 >= attempts) throw error;
+    }
+  }
+  throw lastError;
 }
