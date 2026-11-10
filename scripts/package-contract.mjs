@@ -22,6 +22,8 @@ export const versionFiles = [
   "plugins/tuskway/.codex-plugin/plugin.json",
   ".grok-plugin/plugin.json",
   "package.json",
+  "gemini-extension.json",
+  "server.json",
   ".claude-plugin/marketplace.json",
   ".cursor-plugin/marketplace.json",
 ];
@@ -96,8 +98,13 @@ export function workflowErrors(text) {
   if (!text.includes("self-hosted") || !/\btuskway\b/.test(text)) {
     errors.push("workflow does not require the self-hosted tuskway runner");
   }
-  if (/^\s*(?:push|pull_request|schedule|workflow_call):/m.test(text)) {
+  if (/^\s*(?:pull_request|schedule|workflow_call):/m.test(text)) {
     errors.push("workflow is not manual");
+  }
+  if (/^\s*push:/m.test(text)) {
+    const block = (text.split(/^\s*push:\s*$/m)[1] ?? "").split(/^(?=\S)/m)[0] ?? "";
+    const versionTags = /["']v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+["']/.test(block);
+    if (!versionTags || /branches:/.test(block)) errors.push("workflow is not manual");
   }
   if (!/^\s*workflow_dispatch:/m.test(text)) errors.push("workflow has no manual dispatch");
   return errors;

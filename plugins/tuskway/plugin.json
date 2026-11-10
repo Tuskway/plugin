@@ -17,7 +17,7 @@
       "onboardingSkill": "./skills/setup-tuskway/SKILL.md",
       "interface": {
         "displayName": "Tuskway",
-        "shortDescription": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+        "shortDescription": "Shared plans for coding agents",
         "longDescription": "One plugin folder for the hosted Tuskway MCP server. Clients sign in with OAuth. Workflow skills live under skills/.",
         "developerName": "Tuskway",
         "category": "Developer Tools",
@@ -34,6 +34,13 @@
         "brandColor": "#17150f",
         "composerIcon": "./assets/icon.png",
         "logo": "./assets/icon.png"
+      },
+      "review": {
+        "commerce": false,
+        "commerce_description": "Tuskway does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "Initial package for the hosted Tuskway MCP server and workflow skills."
       }
     }
   }

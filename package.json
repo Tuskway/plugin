@@ -16,6 +16,9 @@
     "url": "https://tuskway.com"
   },
   "files": ["plugins/tuskway/skills"],
+  "scripts": {
+    "build:openai-zip": "node scripts/build-openai-zip.mjs"
+  },
   "pi": {
     "skills": ["./plugins/tuskway/skills"]
   }

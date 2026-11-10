@@ -3,18 +3,27 @@ import { execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   realpathSync,
   rmSync,
+  symlinkSync,
+  writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { packageContentErrors, requiredSkills, skillNames } from "./package-contract.mjs";
+import { packageContentErrors, requiredSkills, skillNames, versionReport } from "./package-contract.mjs";
+import { fetchSchema, schemaErrors } from "./agent-schema.mjs";
+import { buildOpenAiZip, defaultZipPath, folderError } from "./build-openai-zip.mjs";
+import { treeErrors, submoduleErrors, MAX_FILES, MAX_NON_IMAGE_BYTES } from "./package-limits.mjs";
+import { openaiExtensionErrors, reviewErrors } from "./openai-review.mjs";
+import { releaseTagError } from "./attach-release.mjs";
+import { zipLayoutErrors } from "./zip-layout.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pluginRoot = path.join(root, "plugins/tuskway");
@@ -33,6 +42,7 @@ const manifestPaths = [
   "plugins/tuskway/.codex-plugin/plugin.json",
   ".grok-plugin/plugin.json",
   "package.json",
+  "gemini-extension.json",
 ];
 
 function readJson(relativePath) {
@@ -46,6 +56,7 @@ function repoFiles() {
   const walk = (dir) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.name === ".git" || entry.name === "node_modules") continue;
+      if (dir === root && entry.name === "dist") continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
       else files.push(full);
@@ -98,98 +109,6 @@ function assertHostedServer(server, label) {
   for (const key of ["command", "args", "env", "headers", "auth", "extensions"]) {
     assert.equal(Object.hasOwn(server, key), false, `${label} ${key}`);
   }
-}
-
-function resolveRef(rootSchema, ref) {
-  assert.equal(ref.startsWith("#/"), true, ref);
-  let node = rootSchema;
-  for (const part of ref.slice(2).split("/")) node = node[part];
-  assert.notEqual(node, undefined, ref);
-  return node;
-}
-
-function schemaErrors(schema, data, pointer = "", rootSchema = schema) {
-  if (schema.$ref) {
-    return schemaErrors(resolveRef(rootSchema, schema.$ref), data, pointer, rootSchema);
-  }
-  const errors = [];
-  if (schema.oneOf) {
-    const matches = schema.oneOf.filter(
-      (option) => schemaErrors(option, data, pointer, rootSchema).length === 0,
-    );
-    if (matches.length !== 1) {
-      errors.push(`${pointer} matched ${matches.length} oneOf branches`);
-    }
-    return errors;
-  }
-  if (Object.hasOwn(schema, "const") && data !== schema.const) {
-    errors.push(`${pointer} const`);
-  }
-  if (schema.type === "object") {
-    if (data === null || typeof data !== "object" || Array.isArray(data)) {
-      return [`${pointer} type`];
-    }
-    for (const key of schema.required ?? []) {
-      if (!Object.hasOwn(data, key)) errors.push(`${pointer}.${key} required`);
-    }
-    for (const [key, value] of Object.entries(data)) {
-      const property = schema.properties?.[key];
-      if (property) {
-        errors.push(
-          ...schemaErrors(property, value, `${pointer}.${key}`, rootSchema),
-        );
-      } else if (schema.additionalProperties === false) {
-        errors.push(`${pointer}.${key} additional`);
-      } else if (
-        schema.additionalProperties &&
-        typeof schema.additionalProperties === "object"
-      ) {
-        errors.push(
-          ...schemaErrors(
-            schema.additionalProperties,
-            value,
-            `${pointer}.${key}`,
-            rootSchema,
-          ),
-        );
-      }
-      const banned = schema.propertyNames?.not?.enum;
-      if (banned?.includes(key)) errors.push(`${pointer} property ${key}`);
-    }
-    return errors;
-  }
-  if (schema.type === "string") {
-    if (typeof data !== "string") return [`${pointer} type`];
-    if (schema.minLength !== undefined && data.length < schema.minLength) {
-      errors.push(`${pointer} minLength`);
-    }
-    if (schema.maxLength !== undefined && data.length > schema.maxLength) {
-      errors.push(`${pointer} maxLength`);
-    }
-    if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
-      errors.push(`${pointer} pattern`);
-    }
-    return errors;
-  }
-  if (schema.type === "array") {
-    if (!Array.isArray(data)) return [`${pointer} type`];
-    if (schema.items) {
-      data.forEach((item, index) => {
-        errors.push(
-          ...schemaErrors(schema.items, item, `${pointer}[${index}]`, rootSchema),
-        );
-      });
-    }
-  }
-  return errors;
-}
-
-async function fetchSchema(url) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(20000) });
-  assert.equal(response.ok, true, `${url} ${response.status}`);
-  const schema = await response.json();
-  assert.equal(schema.$id, url);
-  return schema;
 }
 
 test("marketplace sources resolve inside plugins/tuskway", () => {
@@ -259,8 +178,14 @@ test("names, descriptions, and versions agree", () => {
   );
   assert.equal(
     portable.extensions["com.openai"].interface.shortDescription,
-    description,
+    "Shared plans for coding agents",
   );
+  assert.equal(portable.extensions["com.openai"].interface.shortDescription.length <= 30, true);
+  assert.deepEqual(openaiExtensionErrors(portable.extensions["com.openai"]), []);
+  assert.equal(portable.extensions["com.openai"].review.test_cases, undefined);
+  assert.equal(portable.extensions["com.openai"].review.demo_recording_url, undefined);
+  assert.equal(typeof portable.extensions["com.openai"].publication.release_notes, "string");
+  assert.equal(portable.extensions["com.openai"].review.release_notes, undefined);
   assert.equal(
     portable.extensions["com.openai"].onboardingSkill,
     "./skills/setup-tuskway/SKILL.md",
@@ -337,7 +262,9 @@ test("Pi package stays private and still installs its skills from git", async ()
   assert.equal(pkg.private, true);
   assert.deepEqual(pkg.pi.skills, ["./plugins/tuskway/skills"]);
   assert.equal("publishConfig" in pkg, false);
-  assert.equal("scripts" in pkg, false);
+  assert.deepEqual(pkg.scripts, {
+    "build:openai-zip": "node scripts/build-openai-zip.mjs",
+  });
   assert.equal(
     readFileSync(path.join(root, "plugins/tuskway/skills/.gitkeep"), "utf8"),
     "",
@@ -350,7 +277,7 @@ test("Pi package stays private and still installs its skills from git", async ()
       recursive: true,
       filter: (candidate) => {
         const base = path.basename(candidate);
-        return base !== ".git" && base !== "node_modules";
+        return base !== ".git" && base !== "node_modules" && base !== "dist";
       },
     });
     execFileSync("git", ["init", "-q"], { cwd: source });
@@ -429,8 +356,6 @@ test("package excludes hooks, rules, subagents, and per-tool dist", () => {
     for (const banned of ["rules", "agents", "hooks", "dist"]) {
       assert.equal(parts.includes(banned), false, relative);
     }
-    assert.equal(path.basename(file) === "server.json", false, relative);
-    assert.equal(path.basename(file) === "gemini-extension.json", false, relative);
     assert.equal(file.endsWith(`${path.sep}hooks.json`), false, relative);
   }
   assert.equal(
@@ -446,6 +371,10 @@ test("README documents install and the MCP constraints", () => {
   assert.match(readme, /rejects any other field/);
   assert.match(readme, /onboardingSkill/);
   assert.match(readme, /npm publish/);
+  assert.match(readme, /git tag vX\.Y\.Z/);
+  assert.match(readme, /build:openai-zip/);
+  assert.match(readme, /--folder/);
+  assert.match(readme, /claude plugin validate \.\/plugins\/tuskway/);
   assert.equal(readme.includes("## Private testing"), false);
   assert.equal(readme.includes("## Later public install"), false);
   assert.equal(/were not run|client-checks|liveAcceptance|This repository is public/i.test(readme), false);
@@ -473,4 +402,249 @@ test("portable manifests match Agent Plugins 1.0.0", async () => {
     "com.openai": { auth: { type: "oauth", client: { mode: "dcr" } } },
   };
   assert.equal(schemaErrors(mcpSchema, withExtensions).length > 0, true);
+});
+
+test("gemini extension and registry server share the hosted MCP URL", async () => {
+  const gemini = readJson("gemini-extension.json");
+  assert.equal(gemini.contextFileName, "GEMINI.md");
+  assert.equal(gemini.mcpServers.tuskway.httpUrl, mcpUrl);
+  assert.equal(existsSync(path.join(root, "GEMINI.md")), true);
+  const geminiText = readFileSync(path.join(root, "GEMINI.md"), "utf8");
+  for (const name of requiredSkills) assert.match(geminiText, new RegExp(name));
+
+  const server = readJson("server.json");
+  assert.equal(server.name, "com.tuskway/tuskway");
+  assert.equal(server.version, version);
+  assert.equal(server.description, description);
+  assert.equal(server.description.length <= 100, true);
+  assert.deepEqual(server.remotes, [{ type: "streamable-http", url: mcpUrl }]);
+  const schema = await fetchSchema(server.$schema);
+  const detail = schema.definitions.ServerDetail;
+  const transport = schema.definitions.StreamableHttpTransport;
+  for (const key of ["name", "description", "version"]) {
+    assert.equal(detail.required.includes(key), true, key);
+  }
+  assert.match(server.name, new RegExp(detail.properties.name.pattern));
+  assert.equal(server.description.length <= detail.properties.description.maxLength, true);
+  assert.equal(transport.properties.type.enum.includes("streamable-http"), true);
+  assert.match(server.remotes[0].url, new RegExp(transport.properties.url.pattern));
+
+  const report = versionReport(root);
+  assert.equal(report.drift.length, 0);
+  assert.equal(report.rows.some((row) => row.path === "server.json" && row.version === version), true);
+  assert.equal(report.rows.some((row) => row.path === "gemini-extension.json" && row.version === version), true);
+});
+
+function positiveCase(index) {
+  return {
+    description: `Case ${index}`,
+    prompt: `Prompt ${index}`,
+    tools_triggered: "epic_list",
+    expected_behavior: "The reviewer sees the epic list.",
+  };
+}
+
+test("OpenAI review schema accepts a complete case list and rejects a partial one", () => {
+  const complete = reviewErrors({
+    demo_recording_url: "https://tuskway.com/demo",
+    test_cases: {
+      positive: [1, 2, 3, 4, 5].map(positiveCase),
+      negative: [1, 2, 3].map((index) => ({
+        description: `Negative ${index}`,
+        prompt: `Negative prompt ${index}`,
+      })),
+    },
+  });
+  assert.deepEqual(complete, []);
+  const short = reviewErrors({
+    test_cases: {
+      positive: [1, 2, 3, 4].map(positiveCase),
+      negative: [{ description: "No", prompt: "No" }],
+    },
+  });
+  assert.equal(short.some((error) => error.includes("exactly 5")), true);
+  assert.equal(short.some((error) => error.includes("exactly 3")), true);
+  assert.equal(
+    reviewErrors({ demo_recording_url: "demo.mp4" }).some((error) => error.includes("https URL")),
+    true,
+  );
+  assert.equal(
+    reviewErrors({ release_notes: "notes" }).some((error) => error.includes("release_notes")),
+    true,
+  );
+  const shipped = readJson("plugins/tuskway/plugin.json").extensions["com.openai"];
+  assert.equal(Object.hasOwn(shipped.review, "test_cases"), false);
+  assert.equal(Object.hasOwn(shipped.review, "demo_recording_url"), false);
+});
+
+test("OpenAI ZIP layout is one plugin root and fails on credentials", async () => {
+  assert.equal(
+    defaultZipPath(root, version),
+    path.join(root, "dist", `tuskway-openai-${version}.zip`),
+  );
+  assert.equal(releaseTagError(`v${version}`, version), null);
+  assert.match(releaseTagError("v9.9.9", version), /does not match/);
+  assert.equal(zipLayoutErrors([
+    "plugin.json",
+    "mcp.json",
+    "skills/setup-tuskway/SKILL.md",
+    "assets/icon.png",
+    "extra.txt",
+  ]).some((error) => error.includes("outside")), true);
+  assert.deepEqual(zipLayoutErrors([
+    "tuskway/plugin.json",
+    "tuskway/mcp.json",
+    "tuskway/skills/setup-tuskway/SKILL.md",
+    "tuskway/assets/icon.png",
+  ]), []);
+
+  const built = await buildOpenAiZip({
+    plugin: pluginRoot,
+    folder: "",
+    out: path.join(root, "dist", `tuskway-openai-${version}.zip`),
+  });
+  assert.deepEqual(built.errors, [], built.errors.join("\n"));
+  const names = execFileSync("unzip", ["-Z1", built.zipPath], { encoding: "utf8" })
+    .split("\n")
+    .filter(Boolean);
+  assert.deepEqual(zipLayoutErrors(names), []);
+  assert.equal(names.includes("plugin.json"), true);
+  assert.equal(names.includes("mcp.json"), true);
+  assert.equal(names.some((name) => name.startsWith("skills/")), true);
+  assert.equal(names.some((name) => name.startsWith("assets/")), true);
+  assert.equal(names.some((name) => name.includes(".app.json") || name.split("/").includes("apps")), false);
+  assert.equal(names.some((name) => name.split("/").some((part) => part.startsWith("."))), false);
+  assert.equal(names.includes("skills/.gitkeep"), false);
+  const zipText = readFileSync(built.zipPath);
+  assert.equal(zipText.includes(Buffer.from("test_credentials")), false);
+  assert.equal(zipText.includes(Buffer.from("reviewer_instructions")), false);
+
+  const folded = await buildOpenAiZip({
+    plugin: pluginRoot,
+    folder: "tuskway",
+    out: path.join(tmpdir(), `tuskway-folder-${process.pid}.zip`),
+  });
+  assert.deepEqual(folded.errors, []);
+  const foldedNames = execFileSync("unzip", ["-Z1", folded.zipPath], { encoding: "utf8" })
+    .split("\n")
+    .filter((name) => name && !name.endsWith("/"));
+  assert.equal(foldedNames.every((name) => name.startsWith("tuskway/")), true);
+  assert.equal(new Set(foldedNames.map((name) => name.split("/")[0])).size, 1);
+  rmSync(folded.zipPath, { force: true });
+
+  const broken = mkdtempSync(path.join(tmpdir(), "tuskway-zip-"));
+  try {
+    cpSync(pluginRoot, broken, { recursive: true });
+    writeFileSync(path.join(broken, "skills/setup-tuskway/leak.md"), "token sk-live-abcdef12\n");
+    const leaked = await buildOpenAiZip({
+      plugin: broken,
+      folder: "",
+      out: path.join(broken, "leaked.zip"),
+    });
+    assert.equal(leaked.errors.some((error) => error.includes("credential pattern")), true);
+    assert.equal(existsSync(path.join(broken, "leaked.zip")), false);
+
+    writeFileSync(path.join(broken, "skills/setup-tuskway/leak.md"), "clean\n");
+    const pluginJson = JSON.parse(readFileSync(path.join(broken, "plugin.json"), "utf8"));
+    pluginJson.extensions["com.openai"].review.test_credentials = { email: "person@example.com" };
+    writeFileSync(path.join(broken, "plugin.json"), JSON.stringify(pluginJson));
+    const keyed = await buildOpenAiZip({
+      plugin: broken,
+      folder: "",
+      out: path.join(broken, "keyed.zip"),
+    });
+    assert.equal(keyed.errors.some((error) => error.includes("test_credentials")), true);
+    assert.equal(existsSync(path.join(broken, "keyed.zip")), false);
+
+    delete pluginJson.extensions["com.openai"].review.test_credentials;
+    writeFileSync(path.join(broken, "plugin.json"), JSON.stringify(pluginJson));
+    const skillPath = path.join(broken, "skills/setup-tuskway/SKILL.md");
+    writeFileSync(skillPath, readFileSync(skillPath, "utf8").replace("name: setup-tuskway", "name: other-tuskway"));
+    const renamed = await buildOpenAiZip({
+      plugin: broken,
+      folder: "",
+      out: path.join(broken, "renamed.zip"),
+    });
+    assert.equal(renamed.errors.some((error) => error.includes("frontmatter name")), true);
+  } finally {
+    rmSync(broken, { recursive: true, force: true });
+    rmSync(path.join(root, "dist"), { recursive: true, force: true });
+  }
+});
+
+test("OpenAI ZIP bytes stay identical and the folder cannot escape", async () => {
+  const stage = mkdtempSync(path.join(tmpdir(), "tuskway-stage-"));
+  assert.equal(folderError(stage, "."), "--folder must be a single directory name");
+  assert.equal(folderError(stage, ".."), "--folder must be a single directory name");
+  assert.equal(folderError(stage, "tuskway"), null);
+  const outside = path.resolve(stage, "..", "escape");
+  assert.equal(outside.startsWith(`${path.resolve(stage)}${path.sep}`), false);
+
+  const first = path.join(tmpdir(), `tuskway-bytes-a-${process.pid}.zip`);
+  const second = path.join(tmpdir(), `tuskway-bytes-b-${process.pid}.zip`);
+  try {
+    const left = await buildOpenAiZip({ plugin: pluginRoot, folder: "", out: first });
+    const right = await buildOpenAiZip({ plugin: pluginRoot, folder: "", out: second });
+    assert.deepEqual(left.errors, [], left.errors.join("\n"));
+    assert.deepEqual(right.errors, []);
+    assert.deepEqual(readFileSync(first), readFileSync(second));
+    for (const folder of [".", ".."]) {
+      const escaped = await buildOpenAiZip({
+        plugin: pluginRoot,
+        folder,
+        out: path.join(tmpdir(), `tuskway-escape-${folder.length}-${process.pid}.zip`),
+      });
+      assert.equal(escaped.errors.some((error) => error.includes("--folder")), true, folder);
+      assert.equal(escaped.zipPath, undefined);
+    }
+  } finally {
+    rmSync(first, { force: true });
+    rmSync(second, { force: true });
+    rmSync(stage, { recursive: true, force: true });
+  }
+});
+
+test("a symlinked skills directory is rejected before copy", async () => {
+  const linked = mkdtempSync(path.join(tmpdir(), "tuskway-linked-"));
+  const out = path.join(linked, "linked.zip");
+  try {
+    cpSync(pluginRoot, linked, {
+      recursive: true,
+      filter: (candidate) => path.basename(candidate) !== "skills",
+    });
+    mkdirSync(linked, { recursive: true });
+    symlinkSync(path.join(pluginRoot, "skills"), path.join(linked, "skills"));
+    const result = await buildOpenAiZip({ plugin: linked, folder: "", out });
+    assert.equal(result.errors.some((error) => error.includes("symlink skills")), true);
+    assert.equal(existsSync(out), false);
+  } finally {
+    rmSync(linked, { recursive: true, force: true });
+  }
+});
+
+test("plugin limits fail on a symlink, a large text file, too many files, and a submodule", () => {
+  assert.equal(MAX_FILES, 512);
+  assert.equal(MAX_NON_IMAGE_BYTES, 256 * 1024);
+  const dir = mkdtempSync(path.join(tmpdir(), "tuskway-limits-"));
+  try {
+    mkdirSync(path.join(dir, "ok"));
+    writeFileSync(path.join(dir, "ok/a.txt"), "a");
+    writeFileSync(path.join(dir, "ok/b.png"), Buffer.alloc(64));
+    assert.deepEqual(treeErrors(dir, { maxFiles: 2, maxBytes: 32 }), []);
+    writeFileSync(path.join(dir, "ok/c.txt"), "c");
+    assert.equal(treeErrors(dir, { maxFiles: 2 }).some((error) => error.includes("file count")), true);
+    writeFileSync(path.join(dir, "ok/big.md"), Buffer.alloc(64));
+    assert.equal(
+      treeErrors(dir, { maxFiles: 10, maxBytes: 32 }).some((error) => error.includes("non-image")),
+      true,
+    );
+    symlinkSync(path.join(dir, "ok/a.txt"), path.join(dir, "ok/link.txt"));
+    assert.equal(treeErrors(dir, { maxFiles: 10, maxBytes: 32 }).some((error) => error.includes("symlink")), true);
+    assert.deepEqual(submoduleErrors("160000 abcdef plugins/tuskway\n100644 dead README.md\n"), [
+      "submodule 160000 abcdef plugins/tuskway",
+    ]);
+    assert.deepEqual(treeErrors(pluginRoot).filter((error) => error.includes("symlink") || error.includes("file count")), []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
