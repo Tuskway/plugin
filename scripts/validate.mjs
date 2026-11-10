@@ -96,7 +96,7 @@ function lastCount(stdout, label) {
 
 const checkout = root === repoRoot;
 const suite = checkout
-  ? spawnSync("node", ["--test", "scripts/test-manifests.mjs"], {
+  ? spawnSync("node", ["--test", "--test-reporter=tap", "scripts/test-manifests.mjs"], {
       cwd: repoRoot,
       encoding: "utf8",
       env: suiteEnv(),
