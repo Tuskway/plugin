@@ -1,20 +1,27 @@
 name: plugin
 
-# Manual package checks. No push or pull_request trigger.
-# A run waits for a self-hosted runner labeled tuskway.
+# Package checks stay on workflow_dispatch.
+# A tag vX.Y.Z publishes a GitHub release and attaches the OpenAI ZIP.
+# Both jobs wait for a self-hosted runner labeled tuskway.
 # Locally:
 #   node --test scripts/test-plugin.mjs
 #   node scripts/sync.mjs --check
 #   node scripts/validate.mjs
+#   node scripts/package-limits.mjs
+#   npm run build:openai-zip
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
   contents: read
 
 jobs:
   package:
+    if: github.event_name == 'workflow_dispatch'
     runs-on:
       - self-hosted
       - tuskway
@@ -26,3 +33,32 @@ jobs:
       - run: node --test scripts/test-plugin.mjs
       - run: node scripts/sync.mjs --check
       - run: node scripts/validate.mjs
+      - run: node scripts/package-limits.mjs
+      - run: npm run build:openai-zip
+      - name: Claude plugin validate
+        run: |
+          if command -v claude >/dev/null 2>&1; then
+            claude plugin validate ./plugins/tuskway
+          else
+            echo "claude is not on PATH. Run claude plugin validate ./plugins/tuskway before submission."
+          fi
+
+  release:
+    if: github.event_name == 'push'
+    runs-on:
+      - self-hosted
+      - tuskway
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/sync.mjs --check
+      - run: node scripts/package-limits.mjs
+      - run: npm run build:openai-zip
+      - name: Publish the GitHub release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/attach-release.mjs

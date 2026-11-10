@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.tuskway/tuskway",
+  "title": "Tuskway",
+  "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+  "version": "0.1.0",
+  "websiteUrl": "https://tuskway.com",
+  "repository": {
+    "url": "https://github.com/Tuskway/plugin",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://tuskway.com/mcp"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "tuskway",
+  "version": "0.1.0",
+  "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "tuskway": {
+      "httpUrl": "https://tuskway.com/mcp"
+    }
+  }
+}
