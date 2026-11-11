@@ -47,7 +47,7 @@ node scripts/sync.mjs --check
 node scripts/validate.mjs
 node scripts/package-limits.mjs
 npm run build:openai-zip
-node --test scripts/test-manifests.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
+node --test scripts/test-manifests.mjs scripts/test-build-claude.mjs evals/mock-tuskway.test.mjs evals/grade.test.mjs
 ```
 
 `sync.mjs --check` compares manifest versions and does not rewrite them or create a tag. `validate.mjs` checks skill frontmatter, the local size budget, and resource links. `package-limits.mjs` fails on a symlink, a submodule, more than 512 files, or a non-image file over 256 KiB under `plugins/tuskway`. All nine skills are required, including `sync-design-tuskway`. `evals/` runs those skills against a mock server, not `https://tuskway.com`.
@@ -70,6 +70,18 @@ git push origin vX.Y.Z
 The tag workflow publishes a GitHub release and attaches `dist/tuskway-openai-X.Y.Z.zip`. If that job cannot attach the ZIP, upload the same file to the release. Do not put access tokens in the ZIP, this README, or CI logs.
 
 Before an OpenAI or Claude submission, run `claude plugin validate ./plugins/tuskway` when the Claude CLI is installed. The package workflow runs that command when `claude` is on the runner.
+
+## Claude directory
+
+The Claude plugin directory accepts only Markdown, text, JSON, YAML, and PNG, JPEG, GIF, WebP, or ICO images. This repository keeps `assets/logo.svg` and `skills/sync-design-tuskway/scripts/drift.mjs` for the other platforms.
+
+To publish the Claude distribution:
+
+```bash
+npm run build:claude
+```
+
+That writes a stripped copy to `dist/claude`. Push that tree to [Tuskway/plugin-claude](https://github.com/Tuskway/plugin-claude) and tag the same version as the manifests.
 
 ## License
 
