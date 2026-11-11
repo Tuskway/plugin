@@ -24,7 +24,7 @@ test("the Claude distribution keeps allowed types and drops scripts and SVG", ()
   try {
     const result = buildClaude({ root: repoRoot, dest });
     assert.deepEqual(result.errors, []);
-    assert.equal(result.version, "0.1.2");
+    assert.equal(result.version, "0.1.3");
     assert.deepEqual(claudeSafetyErrors(dest), []);
 
     const files = new Set(result.files);
@@ -51,10 +51,17 @@ test("the Claude distribution keeps allowed types and drops scripts and SVG", ()
 
     const plugin = JSON.parse(readFileSync(path.join(dest, pluginJson), "utf8"));
     assert.equal(plugin.name, "tuskway");
-    assert.equal(plugin.version, "0.1.2");
+    assert.equal(plugin.version, "0.1.3");
     assert.equal(plugin.mcpServers, "./.mcp.json");
     assert.equal(plugin.repository, "https://github.com/Tuskway/plugin-claude");
     assert.equal(existsSync(path.join(dest, "plugins/tuskway", plugin.mcpServers)), true);
+    assert.equal(plugin.documentationUrl, "https://tuskway.com/docs/claude");
+    assert.equal(plugin.supportUrl, "https://tuskway.com/support");
+    assert.equal(plugin.termsOfServiceUrl, "https://tuskway.com/terms");
+    assert.equal(plugin.privacyPolicyUrl, "https://tuskway.com/privacy");
+    assert.equal(plugin.icon, "./assets/icon.png");
+    assert.equal(existsSync(path.join(dest, "plugins/tuskway", plugin.icon)), true);
+    assert.match(plugin.description, /^Tuskway is a shared epic notebook/);
 
     const mcp = JSON.parse(readFileSync(path.join(dest, "plugins/tuskway/.mcp.json"), "utf8"));
     assert.equal(mcp.mcpServers.tuskway.url, "https://tuskway.com/mcp");
