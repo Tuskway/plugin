@@ -29,7 +29,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pluginRoot = path.join(root, "plugins/tuskway");
 const description =
   "Shared Tuskway plan for coding agents, with hosted MCP sign-in.";
-const version = "0.1.0";
+const version = "0.1.1";
 const mcpUrl = "https://tuskway.com/mcp";
 const pluginSchemaUrl =
   "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";

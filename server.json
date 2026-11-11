@@ -3,7 +3,7 @@
   "name": "com.tuskway/tuskway",
   "title": "Tuskway",
   "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "websiteUrl": "https://tuskway.com",
   "repository": {
     "url": "https://github.com/Tuskway/plugin",
