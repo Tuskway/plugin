@@ -8,6 +8,7 @@
       "notes_edit",
       "notes_write",
       "tracker_changes",
+      "tracker_changes_list",
       "suggest_change"
     ],
     "staleOnce": {

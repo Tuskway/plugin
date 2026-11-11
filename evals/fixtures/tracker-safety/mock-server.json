@@ -8,6 +8,7 @@
       "notes_write",
       "notes_edit",
       "tracker_changes",
+      "tracker_changes_list",
       "suggest_change"
     ]
   },
