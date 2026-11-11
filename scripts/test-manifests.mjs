@@ -21,7 +21,7 @@ import { packageContentErrors, requiredSkills, skillNames, versionReport } from 
 import { fetchSchema, schemaErrors } from "./agent-schema.mjs";
 import { buildOpenAiZip, defaultZipPath, folderError } from "./build-openai-zip.mjs";
 import { treeErrors, submoduleErrors, MAX_FILES, MAX_NON_IMAGE_BYTES } from "./package-limits.mjs";
-import { openaiExtensionErrors, reviewErrors } from "./openai-review.mjs";
+import { forbiddenKeyErrors, openaiExtensionErrors, reviewErrors } from "./openai-review.mjs";
 import { releaseTagError } from "./attach-release.mjs";
 import { zipLayoutErrors } from "./zip-layout.mjs";
 
@@ -29,7 +29,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pluginRoot = path.join(root, "plugins/tuskway");
 const description =
   "Shared Tuskway plan for coding agents, with hosted MCP sign-in.";
-const version = "0.1.1";
+const version = "0.1.2";
 const mcpUrl = "https://tuskway.com/mcp";
 const pluginSchemaUrl =
   "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
@@ -182,7 +182,8 @@ test("names, descriptions, and versions agree", () => {
   );
   assert.equal(portable.extensions["com.openai"].interface.shortDescription.length <= 30, true);
   assert.deepEqual(openaiExtensionErrors(portable.extensions["com.openai"]), []);
-  assert.equal(portable.extensions["com.openai"].review.test_cases, undefined);
+  assert.equal(portable.extensions["com.openai"].review.test_cases.positive.length, 5);
+  assert.equal(portable.extensions["com.openai"].review.test_cases.negative.length, 3);
   assert.equal(portable.extensions["com.openai"].review.demo_recording_url, undefined);
   assert.equal(typeof portable.extensions["com.openai"].publication.release_notes, "string");
   assert.equal(portable.extensions["com.openai"].review.release_notes, undefined);
@@ -473,8 +474,92 @@ test("OpenAI review schema accepts a complete case list and rejects a partial on
     true,
   );
   const shipped = readJson("plugins/tuskway/plugin.json").extensions["com.openai"];
-  assert.equal(Object.hasOwn(shipped.review, "test_cases"), false);
+  assert.deepEqual(reviewErrors(shipped.review), []);
   assert.equal(Object.hasOwn(shipped.review, "demo_recording_url"), false);
+});
+
+/** Read-only tools on the live Tuskway MCP server (tools/list, readOnlyHint true). */
+const readOnlyTuskwayTools = new Set([
+  "epic_list",
+  "epic_get",
+  "design_get",
+  "notes_list",
+  "notes_read",
+  "notes_search",
+  "notes_grep",
+  "notes_revisions",
+  "note_comments_list",
+  "ticket_get",
+  "ticket_list",
+  "ticket_plan",
+  "tracker_changes_list",
+]);
+
+/** Write tools on the live Tuskway MCP server (tools/list, readOnlyHint false). */
+const writeTuskwayTools = new Set([
+  "epic_create",
+  "epic_update",
+  "epic_share",
+  "epic_archive",
+  "epic_unarchive",
+  "notes_edit",
+  "notes_write",
+  "notes_manage",
+  "ticket_draft",
+  "ticket_update",
+  "note_comment",
+  "tracker_sync",
+  "tracker_changes",
+  "suggest_change",
+]);
+
+const toolsOf = (item) => item.tools_triggered.split(/,\s*/);
+
+test("shipped OpenAI review cases use real tools on the demo epic and carry no credentials", () => {
+  const openai = readJson("plugins/tuskway/plugin.json").extensions["com.openai"];
+  const { positive, negative } = openai.review.test_cases;
+  assert.equal(positive.length, 5);
+  assert.equal(negative.length, 3);
+  assert.deepEqual(positive.map((item) => item.tools_triggered), [
+    "epic_list",
+    "design_get",
+    "ticket_plan",
+    "notes_read, notes_edit",
+    "note_comments_list",
+  ]);
+  for (const item of positive) {
+    for (const tool of toolsOf(item)) {
+      assert.equal(readOnlyTuskwayTools.has(tool) || writeTuskwayTools.has(tool), true, tool);
+    }
+    assert.deepEqual(Object.keys(item).sort(), ["description", "expected_behavior", "prompt", "tools_triggered"]);
+    assert.match(item.expected_behavior, /review-openai/);
+    assert.match(item.expected_behavior, /\bdemo\b/);
+  }
+  // One case shows a real write; it is a single notes_edit on the demo notes.
+  const writes = positive.filter((item) => toolsOf(item).some((tool) => writeTuskwayTools.has(tool)));
+  assert.equal(writes.length, 1);
+  assert.deepEqual(toolsOf(writes[0]).filter((tool) => writeTuskwayTools.has(tool)), ["notes_edit"]);
+  assert.match(writes[0].expected_behavior, /notes\.md/);
+  assert.match(writes[0].expected_behavior, /expectedSha256/);
+  assert.match(writes[0].expected_behavior, /Review decisions are recorded in notes\.md\./);
+  for (const item of negative) {
+    assert.deepEqual(Object.keys(item).sort(), ["description", "prompt"]);
+  }
+  assert.match(negative[2].prompt, /review-claude/);
+  assert.deepEqual(forbiddenKeyErrors(openai, "extensions.com.openai"), []);
+  const text = JSON.stringify(openai.review);
+  assert.equal(/password|passcode|token|secret|credential|@[a-z0-9-]+\.[a-z]/i.test(text), false);
+  assert.equal(/reviewer[ _]instructions/i.test(text), false);
+});
+
+test("Claude manifest links the privacy policy and the plugin README is long enough", () => {
+  const claudeManifest = readJson("plugins/tuskway/.claude-plugin/plugin.json");
+  assert.equal(claudeManifest.privacyPolicyUrl, "https://tuskway.com/privacy");
+  const readme = readFileSync(path.join(pluginRoot, "README.md"), "utf8");
+  const words = readme.split(/\s+/).filter((word) => /[A-Za-z0-9]/.test(word));
+  assert.equal(words.length >= 40, true, `${words.length} words`);
+  assert.match(readme, /https:\/\/tuskway\.com\/mcp/);
+  assert.match(readme, /OAuth/);
 });
 
 test("OpenAI ZIP layout is one plugin root and fails on credentials", async () => {

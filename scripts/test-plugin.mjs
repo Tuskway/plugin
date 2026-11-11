@@ -72,7 +72,7 @@ test("nine skills are required and an absent canonical skill fails", () => {
 
 test("the checkout skills and versions are the files on disk", () => {
   const report = versionReport(root);
-  assert.equal(report.canonical, "0.1.1");
+  assert.equal(report.canonical, "0.1.2");
   assert.deepEqual(report.drift, []);
   assert.deepEqual(skillNames(root), requiredSkills);
   assert.deepEqual(packageContentErrors(root), []);
@@ -82,7 +82,7 @@ test("the checkout skills and versions are the files on disk", () => {
   });
   const parsed = JSON.parse(listed);
   assert.equal(parsed.ok, true);
-  assert.equal(parsed.version, "0.1.1");
+  assert.equal(parsed.version, "0.1.2");
   assert.equal(parsed.unversioned.includes(".agents/plugins/marketplace.json"), true);
 });
 
