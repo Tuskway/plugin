@@ -2,7 +2,7 @@ name: plugin
 
 # Package checks stay on workflow_dispatch.
 # A tag vX.Y.Z publishes a GitHub release and attaches the OpenAI ZIP.
-# Both jobs wait for a self-hosted runner labeled tuskway.
+# Both jobs run on GitHub-hosted runners, which are free for a public repository.
 # Locally:
 #   node --test scripts/test-plugin.mjs
 #   node scripts/sync.mjs --check
@@ -22,9 +22,7 @@ permissions:
 jobs:
   package:
     if: github.event_name == 'workflow_dispatch'
-    runs-on:
-      - self-hosted
-      - tuskway
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,9 +43,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    runs-on:
-      - self-hosted
-      - tuskway
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:

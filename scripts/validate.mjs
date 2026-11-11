@@ -145,9 +145,9 @@ const report = {
   },
   workflow: workflowProblems,
   ci: {
-    hostedRuns: false,
+    hostedRuns: true,
     trigger: "workflow_dispatch",
-    runner: ["self-hosted", "tuskway"],
+    runner: ["ubuntu-latest"],
   },
 };
 
