@@ -199,8 +199,13 @@ test("validate reports the package on disk", () => {
   assert.deepEqual(report.skills.present.includes("sync-design-tuskway"), true);
   assert.deepEqual(report.skills.optionalAbsent, []);
   assert.equal(report.versionDrift.length, 0);
-  assert.equal(report.claudePluginValidate.status, "UNAVAILABLE");
-  assert.notEqual(report.claudePluginValidate.status, "pass");
+  const claudeOnPath = spawnSync("which", ["claude"], { encoding: "utf8" }).status === 0;
+  if (claudeOnPath) {
+    assert.equal(report.claudePluginValidate.status, "pass");
+  } else {
+    assert.equal(report.claudePluginValidate.status, "UNAVAILABLE");
+    assert.notEqual(report.claudePluginValidate.status, "pass");
+  }
   assert.equal(report.release.autoTag, false);
   assert.deepEqual(report.workflow, []);
   assert.equal(report.clients, undefined);
