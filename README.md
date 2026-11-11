@@ -8,7 +8,7 @@ Nine workflow skills are in `plugins/tuskway/skills/`.
 
 ## Install
 
-Install from this repository. It is not listed in the Claude, Cursor, or Codex plugin directories, or the MCP Registry.
+Install from this repository. It is not listed in the Claude, Cursor, or Codex plugin directories. The hosted server is listed in the official MCP Registry as `com.tuskway/tuskway`.
 
 | Agent | Install | Sign in |
 | --- | --- | --- |
@@ -37,7 +37,7 @@ Codex requires `onboardingSkill` to be a `./` path to a packaged `SKILL.md`. Bot
 
 The root `package.json` is `"private": true`, so `npm publish` does not upload this package. Pi installs the git repository and loads `plugins/tuskway/skills`.
 
-`server.json` names the same server for the MCP Registry: `com.tuskway/tuskway` over streamable HTTP. `gemini-extension.json` and `GEMINI.md` are the Gemini CLI extension at the repository root. The Gemini CLI gallery also needs the GitHub topic `gemini-cli-extension` on this repository.
+`server.json` names the same server for the official MCP Registry: `com.tuskway/tuskway` over streamable HTTP at `https://tuskway.com/mcp`. `gemini-extension.json` and `GEMINI.md` are the Gemini CLI extension at the repository root. The Gemini CLI gallery also needs the GitHub topic `gemini-cli-extension` on this repository.
 
 ## Check the package
 
@@ -68,6 +68,8 @@ git push origin vX.Y.Z
 ```
 
 The tag workflow publishes a GitHub release and attaches `dist/tuskway-openai-X.Y.Z.zip`. If that job cannot attach the ZIP, upload the same file to the release. Do not put access tokens in the ZIP, this README, or CI logs.
+
+If `server.json` changed in the release, republish it to the official MCP Registry after the tag is pushed. Authenticate with DNS for `tuskway.com`, then run `mcp-publisher publish` from the repository root so `com.tuskway/tuskway` matches the new version.
 
 Before an OpenAI or Claude submission, run `claude plugin validate ./plugins/tuskway` when the Claude CLI is installed. The package workflow runs that command when `claude` is on the runner.
 

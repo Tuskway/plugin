@@ -1,6 +1,6 @@
 {
   "name": "tuskway",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "description": "Tuskway is a shared epic notebook for a software team. Agents and people work from the same plan, design, and tickets, with hosted sign-in.",
   "license": "MIT",

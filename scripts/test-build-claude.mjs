@@ -24,7 +24,7 @@ test("the Claude distribution keeps allowed types and drops scripts and SVG", ()
   try {
     const result = buildClaude({ root: repoRoot, dest });
     assert.deepEqual(result.errors, []);
-    assert.equal(result.version, "0.1.3");
+    assert.equal(result.version, "0.1.4");
     assert.deepEqual(claudeSafetyErrors(dest), []);
 
     const files = new Set(result.files);
@@ -51,7 +51,7 @@ test("the Claude distribution keeps allowed types and drops scripts and SVG", ()
 
     const plugin = JSON.parse(readFileSync(path.join(dest, pluginJson), "utf8"));
     assert.equal(plugin.name, "tuskway");
-    assert.equal(plugin.version, "0.1.3");
+    assert.equal(plugin.version, "0.1.4");
     assert.equal(plugin.mcpServers, "./.mcp.json");
     assert.equal(plugin.repository, "https://github.com/Tuskway/plugin-claude");
     assert.equal(existsSync(path.join(dest, "plugins/tuskway", plugin.mcpServers)), true);
