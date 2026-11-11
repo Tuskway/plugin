@@ -6,9 +6,9 @@
   "plugins": [
     {
       "name": "tuskway",
-      "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+      "description": "Tuskway is a shared epic notebook for a software team. Agents and people work from the same plan, design, and tickets, with hosted sign-in.",
       "source": "./plugins/tuskway",
-      "version": "0.1.2"
+      "version": "0.1.3"
     }
   ]
 }

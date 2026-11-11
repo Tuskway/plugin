@@ -28,8 +28,14 @@ import { zipLayoutErrors } from "./zip-layout.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pluginRoot = path.join(root, "plugins/tuskway");
 const description =
+  "Tuskway is a shared epic notebook for a software team. Agents and people work from the same plan, design, and tickets, with hosted sign-in.";
+// The MCP Registry caps description at 100 characters, so server.json keeps the short line.
+const registryDescription =
   "Shared Tuskway plan for coding agents, with hosted MCP sign-in.";
-const version = "0.1.2";
+const folderNote =
+  "One plugin folder for the hosted Tuskway MCP server. Clients sign in with OAuth. Workflow skills live under skills/.";
+const demoRecordingUrl = "https://www.loom.com/share/3dfd1f25053748d391b94239b54ffc2e";
+const version = "0.1.3";
 const mcpUrl = "https://tuskway.com/mcp";
 const pluginSchemaUrl =
   "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
@@ -184,7 +190,7 @@ test("names, descriptions, and versions agree", () => {
   assert.deepEqual(openaiExtensionErrors(portable.extensions["com.openai"]), []);
   assert.equal(portable.extensions["com.openai"].review.test_cases.positive.length, 5);
   assert.equal(portable.extensions["com.openai"].review.test_cases.negative.length, 3);
-  assert.equal(portable.extensions["com.openai"].review.demo_recording_url, undefined);
+  assert.equal(portable.extensions["com.openai"].review.demo_recording_url, demoRecordingUrl);
   assert.equal(typeof portable.extensions["com.openai"].publication.release_notes, "string");
   assert.equal(portable.extensions["com.openai"].review.release_notes, undefined);
   assert.equal(
@@ -417,7 +423,7 @@ test("gemini extension and registry server share the hosted MCP URL", async () =
   const server = readJson("server.json");
   assert.equal(server.name, "com.tuskway/tuskway");
   assert.equal(server.version, version);
-  assert.equal(server.description, description);
+  assert.equal(server.description, registryDescription);
   assert.equal(server.description.length <= 100, true);
   assert.deepEqual(server.remotes, [{ type: "streamable-http", url: mcpUrl }]);
   const schema = await fetchSchema(server.$schema);
@@ -476,7 +482,7 @@ test("OpenAI review schema accepts a complete case list and rejects a partial on
   );
   const shipped = readJson("plugins/tuskway/plugin.json").extensions["com.openai"];
   assert.deepEqual(reviewErrors(shipped.review), []);
-  assert.equal(Object.hasOwn(shipped.review, "demo_recording_url"), false);
+  assert.equal(shipped.review.demo_recording_url, demoRecordingUrl);
 });
 
 /** Read-only tools on the live Tuskway MCP server (tools/list, readOnlyHint true). */
@@ -561,6 +567,58 @@ test("Claude manifest links the privacy policy and the plugin README is long eno
   assert.equal(words.length >= 40, true, `${words.length} words`);
   assert.match(readme, /https:\/\/tuskway\.com\/mcp/);
   assert.match(readme, /OAuth/);
+});
+
+function assertListingUrl(value, expected, label) {
+  assert.equal(value, expected, label);
+  const url = new URL(value);
+  assert.equal(url.protocol, "https:", label);
+  assert.equal(url.username, "", `${label} carries a username`);
+  assert.equal(url.password, "", `${label} carries a password`);
+  assert.equal(url.search, "", `${label} carries a query`);
+  assert.equal(/token|secret|password|key=/i.test(value), false, `${label} looks like a credential`);
+}
+
+test("Claude manifest links documentation, support, terms and privacy, and ships the icon", () => {
+  const claudeManifest = readJson("plugins/tuskway/.claude-plugin/plugin.json");
+  for (const [key, expected] of [
+    ["privacyPolicyUrl", "https://tuskway.com/privacy"],
+    ["documentationUrl", "https://tuskway.com/docs/claude"],
+    ["supportUrl", "https://tuskway.com/support"],
+    ["termsOfServiceUrl", "https://tuskway.com/terms"],
+  ]) {
+    assertListingUrl(claudeManifest[key], expected, `.claude-plugin/plugin.json ${key}`);
+  }
+  assert.equal(claudeManifest.icon, "./assets/icon.png");
+  assertInside(pluginRoot, claudeManifest.icon, ".claude-plugin/plugin.json icon");
+});
+
+test("OpenAI listing carries the demo recording and the support link", () => {
+  const portable = readJson("plugins/tuskway/plugin.json");
+  const openai = portable.extensions["com.openai"];
+  assertListingUrl(openai.review.demo_recording_url, demoRecordingUrl, "review.demo_recording_url");
+  assertListingUrl(openai.interface.supportURL, "https://tuskway.com/support", "interface.supportURL");
+  const codex = readJson("plugins/tuskway/.codex-plugin/plugin.json");
+  assertListingUrl(codex.interface.supportURL, "https://tuskway.com/support", "codex interface.supportURL");
+});
+
+test("listing text says what Tuskway does and no manifest carries the folder note", () => {
+  const portable = readJson("plugins/tuskway/plugin.json");
+  const codex = readJson("plugins/tuskway/.codex-plugin/plugin.json");
+  assert.equal(portable.extensions["com.openai"].interface.longDescription, description);
+  assert.equal(codex.interface.longDescription, description);
+  assert.equal(description.length <= 4000, true);
+  for (const manifestPath of [
+    ...manifestPaths,
+    "server.json",
+    ".claude-plugin/marketplace.json",
+    ".cursor-plugin/marketplace.json",
+    ".agents/plugins/marketplace.json",
+  ]) {
+    const text = readFileSync(path.join(root, manifestPath), "utf8");
+    assert.equal(text.includes(folderNote), false, manifestPath);
+    assert.equal(/plugin folder|live under skills\//i.test(text), false, manifestPath);
+  }
 });
 
 test("OpenAI ZIP layout is one plugin root and fails on credentials", async () => {

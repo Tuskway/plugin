@@ -1,7 +1,7 @@
 {
   "name": "tuskway",
-  "version": "0.1.2",
-  "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
+  "version": "0.1.3",
+  "description": "Tuskway is a shared epic notebook for a software team. Agents and people work from the same plan, design, and tickets, with hosted sign-in.",
   "author": {
     "name": "Tuskway",
     "email": "hello@tuskway.com",
@@ -17,12 +17,12 @@
   "interface": {
     "displayName": "Tuskway",
     "shortDescription": "Shared plans for coding agents",
-    "longDescription": "One plugin folder for the hosted Tuskway MCP server. Clients sign in with OAuth. Workflow skills live under skills/.",
+    "longDescription": "Tuskway is a shared epic notebook for a software team. Agents and people work from the same plan, design, and tickets, with hosted sign-in.",
     "developerName": "Tuskway",
     "category": "Developer Tools",
     "capabilities": ["Read", "Write"],
     "websiteURL": "https://tuskway.com",
-    "supportURL": "https://tuskway.com",
+    "supportURL": "https://tuskway.com/support",
     "privacyPolicyURL": "https://tuskway.com/privacy",
     "termsOfServiceURL": "https://tuskway.com/terms",
     "defaultPrompt": [
