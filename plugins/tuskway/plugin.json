@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tuskway",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
   "author": {
     "name": "Tuskway",
@@ -40,7 +40,7 @@
         "commerce_description": "Tuskway does not sell products or process payments."
       },
       "publication": {
-        "release_notes": "Initial package for the hosted Tuskway MCP server and workflow skills."
+        "release_notes": "The comment and tracker-change skills use the new read-only tools note_comments_list and tracker_changes_list."
       }
     }
   }
