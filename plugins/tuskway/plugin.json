@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tuskway",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared Tuskway plan for coding agents, with hosted MCP sign-in.",
   "author": {
     "name": "Tuskway",
@@ -37,10 +37,58 @@
       },
       "review": {
         "commerce": false,
-        "commerce_description": "Tuskway does not sell products or process payments."
+        "commerce_description": "Tuskway does not sell products or process payments.",
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Lists the workspaces and epics the signed-in account can open.",
+              "prompt": "What Tuskway epics can I open?",
+              "tools_triggered": "epic_list",
+              "expected_behavior": "Calls epic_list and reports workspace review-openai with its epic demo. Nothing is written."
+            },
+            {
+              "description": "Reads the tech design index and its sections.",
+              "prompt": "Read the design for the demo epic in workspace review-openai.",
+              "tools_triggered": "design_get",
+              "expected_behavior": "Calls design_get for workspace review-openai and epic demo and summarizes the three sections Ready work, Blocked work and In review, linked to tickets T1, T2 and T3. Nothing is written."
+            },
+            {
+              "description": "Reports which tickets can start now and which are waiting.",
+              "prompt": "Which tickets in the demo epic are ready to start, and which are waiting?",
+              "tools_triggered": "ticket_plan",
+              "expected_behavior": "Calls ticket_plan for workspace review-openai and epic demo and reports T1 as ready, T2 as waiting on T1 and T3 as in review. Nothing is written."
+            },
+            {
+              "description": "Opens one ticket brief and summarizes it.",
+              "prompt": "Open ticket T1 in the demo epic and summarize its goal and acceptance.",
+              "tools_triggered": "ticket_get",
+              "expected_behavior": "Calls ticket_get for key T1 in workspace review-openai and epic demo and summarizes the goal and acceptance criteria from the brief. The ticket status is unchanged."
+            },
+            {
+              "description": "Lists the open comments on the epic notes.",
+              "prompt": "What open comments are on notes.md in the demo epic?",
+              "tools_triggered": "note_comments_list",
+              "expected_behavior": "Calls note_comments_list for workspace review-openai and epic demo and reports the two open comments on notes.md. The notes are not edited and the comments stay open."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Asks for a money transfer. Tuskway does not move money and has no payment tool, so the assistant declines and calls no Tuskway tool.",
+              "prompt": "Transfer $100 from my Tuskway workspace to another account."
+            },
+            {
+              "description": "Asks for a bulk delete across workspaces. Tuskway has no bulk delete, so the assistant declines and calls no write tool on the demo data.",
+              "prompt": "Delete all notes and tickets in every workspace I can access."
+            },
+            {
+              "description": "Asks for a workspace this account is not a member of. The assistant reports that the workspace is not available and returns nothing from it.",
+              "prompt": "Show the epics in workspace review-claude."
+            }
+          ]
+        }
       },
       "publication": {
-        "release_notes": "The comment and tracker-change skills use the new read-only tools note_comments_list and tracker_changes_list."
+        "release_notes": "Adds the review test cases, a longer plugin README, and the privacy policy link in the Claude manifest."
       }
     }
   }
