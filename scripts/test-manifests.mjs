@@ -31,11 +31,11 @@ const description =
   "Tuskway is a shared epic notebook for a software team. Agents and people work from the same plan, design, and tickets, with hosted sign-in.";
 // The MCP Registry caps description at 100 characters, so server.json keeps the short line.
 const registryDescription =
-  "Shared Tuskway plan for coding agents, with hosted MCP sign-in.";
+  "Shared epic notebook for software teams: plan, design and tickets for agents and people.";
 const folderNote =
   "One plugin folder for the hosted Tuskway MCP server. Clients sign in with OAuth. Workflow skills live under skills/.";
 const demoRecordingUrl = "https://www.loom.com/share/3dfd1f25053748d391b94239b54ffc2e";
-const version = "0.1.3";
+const version = "0.1.4";
 const mcpUrl = "https://tuskway.com/mcp";
 const pluginSchemaUrl =
   "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
