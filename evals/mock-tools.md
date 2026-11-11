@@ -24,7 +24,9 @@ Pass only values you already have. Do not read `mock-server.json`.
 | ticket_plan | `workspace`, `epic` |
 | ticket_draft | `workspace`, `epic`, `key`, `title`. Optional `goal`, `scope`, `acceptance`, `files`, `dependsOn`, `areas`, `expectedSha256`. |
 | ticket_update | `workspace`, `epic`, `key`, `status` |
-| note_comment | `workspace`, `epic`, `action` (`list`, `reply`, `resolve`). `reply` needs `id` and `body` and leaves the comment open. `resolve` needs `id`. |
+| note_comments_list | `workspace`, `epic`. Read-only. |
+| note_comment | `workspace`, `epic`, `action` (`reply`, `resolve`). `reply` needs `id` and `body` and leaves the comment open. `resolve` needs `id`. |
 | suggest_change | `workspace`, `epic`, `path`, `message` |
-| tracker_changes | `workspace`, `epic`, `action` (`list`, `get`, `resolve`). `get` needs `id`. `resolve` needs `id` and `outcome` (`applied` or `dismissed`). |
+| tracker_changes_list | `workspace`, `epic`. Read-only. Omit `id` to list; pass `id` to get one change. |
+| tracker_changes | `workspace`, `epic`, `action` (`resolve`). `resolve` needs `id` and `outcome` (`applied` or `dismissed`). |
 | tracker_sync | no successful publish. The fixture returns an error. |

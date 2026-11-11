@@ -11,7 +11,8 @@
       "ticket_get",
       "ticket_plan",
       "ticket_update",
-      "note_comment"
+      "note_comment",
+      "note_comments_list"
     ],
     "ticketUpdateStatuses": ["in_progress"]
   },

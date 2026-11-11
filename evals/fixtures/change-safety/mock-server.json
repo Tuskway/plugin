@@ -9,6 +9,7 @@
       "notes_edit",
       "notes_write",
       "note_comment",
+      "note_comments_list",
       "suggest_change"
     ]
   },

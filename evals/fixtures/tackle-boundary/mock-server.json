@@ -11,7 +11,8 @@
       "ticket_get",
       "ticket_plan",
       "suggest_change",
-      "note_comment"
+      "note_comment",
+      "note_comments_list"
     ]
   },
   "workspaces": [{ "slug": "fixture", "name": "Fixture", "role": "owner" }],

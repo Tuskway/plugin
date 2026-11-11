@@ -21,8 +21,10 @@ const TOOLS = new Set([
   "ticket_draft",
   "ticket_update",
   "note_comment",
+  "note_comments_list",
   "suggest_change",
   "tracker_changes",
+  "tracker_changes_list",
   "tracker_sync",
 ]);
 
@@ -537,14 +539,18 @@ function dispatch(state, tool, args) {
       mock: true,
     };
   }
+  if (tool === "note_comments_list") {
+    const error = missing(["workspace", "epic"]);
+    if (error) return error;
+    const epic = findEpic(state, args.workspace, args.epic);
+    if (!epic) return { error: "epic not found", mock: true };
+    return state.comments.filter((comment) => comment.epic === args.epic);
+  }
   if (tool === "note_comment") {
     const error = missing(["workspace", "epic", "action"]);
     if (error) return error;
     const epic = findEpic(state, args.workspace, args.epic);
     if (!epic) return { error: "epic not found", mock: true };
-    if (args.action === "list") {
-      return state.comments.filter((comment) => comment.epic === args.epic);
-    }
     if (args.action === "reply") {
       if (!args.id || !args.body) return { error: "missing id or body", mock: true };
       if (epic.status === "archived") return { error: "reply refused", mock: true };
@@ -582,21 +588,23 @@ function dispatch(state, tool, args) {
     });
     return { path: args.path, status: "suggested", mock: true };
   }
-  if (tool === "tracker_changes") {
-    const error = missing(["workspace", "epic", "action"]);
+  if (tool === "tracker_changes_list") {
+    const error = missing(["workspace", "epic"]);
     if (error) return error;
-    if (args.action === "list") {
-      return state.trackerChanges.filter((change) => {
-        if (change.epic && change.epic !== args.epic) return false;
-        if (change.workspace && change.workspace !== args.workspace) return false;
-        return !args.status || change.status === args.status;
-      });
-    }
-    if (args.action === "get") {
+    if (args.id) {
       const change = state.trackerChanges.find((item) => item.id === args.id);
       if (!change) return { error: "tracker change not found", mock: true };
       return { ...change, mock: true };
     }
+    return state.trackerChanges.filter((change) => {
+      if (change.epic && change.epic !== args.epic) return false;
+      if (change.workspace && change.workspace !== args.workspace) return false;
+      return !args.status || change.status === args.status;
+    });
+  }
+  if (tool === "tracker_changes") {
+    const error = missing(["workspace", "epic", "action"]);
+    if (error) return error;
     if (args.action === "resolve") {
       const epic = findEpic(state, args.workspace, args.epic);
       if (!epic || !epic.permissions.canManageInbox || epic.status === "archived") {
