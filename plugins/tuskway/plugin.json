@@ -59,10 +59,10 @@
               "expected_behavior": "Calls ticket_plan for workspace review-openai and epic demo and reports T1 as ready, T2 as waiting on T1 and T3 as in review. Nothing is written."
             },
             {
-              "description": "Opens one ticket brief and summarizes it.",
-              "prompt": "Open ticket T1 in the demo epic and summarize its goal and acceptance.",
-              "tools_triggered": "ticket_get",
-              "expected_behavior": "Calls ticket_get for key T1 in workspace review-openai and epic demo and summarizes the goal and acceptance criteria from the brief. The ticket status is unchanged."
+              "description": "Records a short decision in the demo epic notes with one exact-string edit.",
+              "prompt": "In the demo epic in workspace review-openai, add the decision \"Review decisions are recorded in notes.md.\" to the Decisions list in notes.md.",
+              "tools_triggered": "notes_read, notes_edit",
+              "expected_behavior": "Calls notes_read for notes.md in workspace review-openai and epic demo to get its sha256, then calls notes_edit with that expectedSha256, oldString \"- Running the seed script again resets this epic.\" and newString \"- Running the seed script again resets this epic.\\n- Review decisions are recorded in notes.md.\". notes.md gains that one line under Decisions and nothing else in the note changes. The result reports the new sha256 and url, not the note body."
             },
             {
               "description": "Lists the open comments on the epic notes.",

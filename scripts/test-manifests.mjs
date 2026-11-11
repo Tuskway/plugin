@@ -495,26 +495,56 @@ const readOnlyTuskwayTools = new Set([
   "tracker_changes_list",
 ]);
 
-test("shipped OpenAI review cases use real read-only tools on the demo epic and carry no credentials", () => {
+/** Write tools on the live Tuskway MCP server (tools/list, readOnlyHint false). */
+const writeTuskwayTools = new Set([
+  "epic_create",
+  "epic_update",
+  "epic_share",
+  "epic_archive",
+  "epic_unarchive",
+  "notes_edit",
+  "notes_write",
+  "notes_manage",
+  "ticket_draft",
+  "ticket_update",
+  "note_comment",
+  "tracker_sync",
+  "tracker_changes",
+  "suggest_change",
+]);
+
+const toolsOf = (item) => item.tools_triggered.split(/,\s*/);
+
+test("shipped OpenAI review cases use real tools on the demo epic and carry no credentials", () => {
   const openai = readJson("plugins/tuskway/plugin.json").extensions["com.openai"];
   const { positive, negative } = openai.review.test_cases;
   assert.equal(positive.length, 5);
   assert.equal(negative.length, 3);
-  assert.deepEqual(
-    positive.map((item) => item.tools_triggered),
-    ["epic_list", "design_get", "ticket_plan", "ticket_get", "note_comments_list"],
-  );
+  assert.deepEqual(positive.map((item) => item.tools_triggered), [
+    "epic_list",
+    "design_get",
+    "ticket_plan",
+    "notes_read, notes_edit",
+    "note_comments_list",
+  ]);
   for (const item of positive) {
-    for (const tool of item.tools_triggered.split(/,\s*/)) {
-      assert.equal(readOnlyTuskwayTools.has(tool), true, tool);
+    for (const tool of toolsOf(item)) {
+      assert.equal(readOnlyTuskwayTools.has(tool) || writeTuskwayTools.has(tool), true, tool);
     }
     assert.deepEqual(Object.keys(item).sort(), ["description", "expected_behavior", "prompt", "tools_triggered"]);
+    assert.match(item.expected_behavior, /review-openai/);
+    assert.match(item.expected_behavior, /\bdemo\b/);
   }
+  // One case shows a real write; it is a single notes_edit on the demo notes.
+  const writes = positive.filter((item) => toolsOf(item).some((tool) => writeTuskwayTools.has(tool)));
+  assert.equal(writes.length, 1);
+  assert.deepEqual(toolsOf(writes[0]).filter((tool) => writeTuskwayTools.has(tool)), ["notes_edit"]);
+  assert.match(writes[0].expected_behavior, /notes\.md/);
+  assert.match(writes[0].expected_behavior, /expectedSha256/);
+  assert.match(writes[0].expected_behavior, /Review decisions are recorded in notes\.md\./);
   for (const item of negative) {
     assert.deepEqual(Object.keys(item).sort(), ["description", "prompt"]);
   }
-  assert.match(positive[0].expected_behavior, /review-openai/);
-  assert.match(positive[0].expected_behavior, /\bdemo\b/);
   assert.match(negative[2].prompt, /review-claude/);
   assert.deepEqual(forbiddenKeyErrors(openai, "extensions.com.openai"), []);
   const text = JSON.stringify(openai.review);
