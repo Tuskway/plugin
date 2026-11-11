@@ -199,8 +199,13 @@ test("validate reports the package on disk", () => {
   assert.deepEqual(report.skills.present.includes("sync-design-tuskway"), true);
   assert.deepEqual(report.skills.optionalAbsent, []);
   assert.equal(report.versionDrift.length, 0);
-  assert.equal(report.claudePluginValidate.status, "UNAVAILABLE");
-  assert.notEqual(report.claudePluginValidate.status, "pass");
+  const claudeOnPath = spawnSync("which", ["claude"], { encoding: "utf8" }).status === 0;
+  if (claudeOnPath) {
+    assert.equal(report.claudePluginValidate.status, "pass");
+  } else {
+    assert.equal(report.claudePluginValidate.status, "UNAVAILABLE");
+    assert.notEqual(report.claudePluginValidate.status, "pass");
+  }
   assert.equal(report.release.autoTag, false);
   assert.deepEqual(report.workflow, []);
   assert.equal(report.clients, undefined);
@@ -211,15 +216,16 @@ test("validate reports the package on disk", () => {
     .find((line) => line.startsWith("| Grok Build |"));
   assert.equal(grokRow.includes("--trust"), false);
   assert.match(grokRow, /grok plugin install tuskway\/plugin/);
-  assert.equal(report.ci.hostedRuns, false);
-  assert.deepEqual(report.ci.runner, ["self-hosted", "tuskway"]);
+  assert.equal(report.ci.hostedRuns, true);
+  assert.equal(report.ci.trigger, "workflow_dispatch");
+  assert.deepEqual(report.ci.runner, ["ubuntu-latest"]);
 });
 
-test("the workflow stays manual and self-hosted", () => {
+test("the workflow stays manual and runs on a GitHub-hosted runner", () => {
   const text = readFileSync(path.join(root, ".github/workflows/plugin.yml"), "utf8");
   assert.deepEqual(workflowErrors(text), []);
-  const hosted = text.replace("self-hosted", "ubuntu-22.04");
-  assert.equal(workflowErrors(hosted).some((error) => error.includes("GitHub-hosted")), true);
+  const selfHosted = text.replaceAll("runs-on: ubuntu-latest", "runs-on: self-hosted");
+  assert.equal(workflowErrors(selfHosted).some((error) => error.includes("self-hosted")), true);
   const automatic = text.replace("workflow_dispatch:", "pull_request:");
   assert.equal(workflowErrors(automatic).some((error) => error.includes("not manual")), true);
 });

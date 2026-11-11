@@ -90,13 +90,11 @@ export function versionReport(root) {
   };
 }
 
-const hostedRunner = /\b(?:ubuntu-latest|ubuntu-\d+\.\d+|macos-latest|macos-\d+|windows-latest|windows-\d+)\b/;
-
 export function workflowErrors(text) {
   const errors = [];
-  if (hostedRunner.test(text)) errors.push("workflow selects a GitHub-hosted runner");
-  if (!text.includes("self-hosted") || !/\btuskway\b/.test(text)) {
-    errors.push("workflow does not require the self-hosted tuskway runner");
+  if (text.includes("self-hosted")) errors.push("workflow selects a self-hosted runner");
+  if (!/^\s*runs-on:\s*ubuntu-latest\s*$/m.test(text)) {
+    errors.push("workflow does not run on a GitHub-hosted ubuntu runner");
   }
   if (/^\s*(?:pull_request|schedule|workflow_call):/m.test(text)) {
     errors.push("workflow is not manual");

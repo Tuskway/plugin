@@ -21,7 +21,7 @@ function claudeValidator(root) {
   if (root !== repoRoot) {
     return {
       status: "NOT RUN",
-      command: "claude plugin validate --strict",
+      command: "claude plugin validate --strict .",
       reason: "Strict Claude validation is not run for an alternate root.",
     };
   }
@@ -29,17 +29,17 @@ function claudeValidator(root) {
   if (!binary) {
     return {
       status: "UNAVAILABLE",
-      command: "claude plugin validate --strict",
+      command: "claude plugin validate --strict .",
       reason: "claude is not on PATH. This is not a passing strict validation.",
     };
   }
-  const ran = spawnSync(binary, ["plugin", "validate", "--strict"], {
+  const ran = spawnSync(binary, ["plugin", "validate", "--strict", "."], {
     cwd: path.join(root, "plugins/tuskway"),
     encoding: "utf8",
   });
   return {
     status: ran.status === 0 ? "pass" : "fail",
-    command: "claude plugin validate --strict",
+    command: "claude plugin validate --strict .",
     exitCode: ran.status,
   };
 }
@@ -145,9 +145,9 @@ const report = {
   },
   workflow: workflowProblems,
   ci: {
-    hostedRuns: false,
+    hostedRuns: true,
     trigger: "workflow_dispatch",
-    runner: ["self-hosted", "tuskway"],
+    runner: ["ubuntu-latest"],
   },
 };
 
