@@ -17,7 +17,8 @@
   },
   "files": ["plugins/tuskway/skills"],
   "scripts": {
-    "build:openai-zip": "node scripts/build-openai-zip.mjs"
+    "build:openai-zip": "node scripts/build-openai-zip.mjs",
+    "build:claude": "node scripts/build-claude.mjs"
   },
   "pi": {
     "skills": ["./plugins/tuskway/skills"]

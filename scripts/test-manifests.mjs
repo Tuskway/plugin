@@ -265,6 +265,7 @@ test("Pi package stays private and still installs its skills from git", async ()
   assert.equal("publishConfig" in pkg, false);
   assert.deepEqual(pkg.scripts, {
     "build:openai-zip": "node scripts/build-openai-zip.mjs",
+    "build:claude": "node scripts/build-claude.mjs",
   });
   assert.equal(
     readFileSync(path.join(root, "plugins/tuskway/skills/.gitkeep"), "utf8"),
